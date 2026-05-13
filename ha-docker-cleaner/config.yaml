@@ -1,8 +1,9 @@
 name: HA Docker Cleaner
-version: "1.0.3"
+version: "1.1.0"
 slug: ha_docker_cleaner
-description: Automatically prunes unused Docker images and stopped containers
-url: "https://github.com/tomtomdk/ha-docker-cleaner"
+description: Automatically prunes unused Docker resources and can send cleanup notifications
+url: "https://github.com/tomtomdk/ha-addons/tree/main/ha-docker-cleaner"
+
 arch:
   - aarch64
   - amd64
@@ -13,7 +14,9 @@ arch:
 startup: services
 boot: auto
 init: false
+
 docker_api: true
+homeassistant_api: true
 host_network: false
 
 map:
@@ -23,15 +26,53 @@ map:
 options:
   run_day: "sun"
   run_hour: 4
+  run_on_start: false
+
   prune_images: true
   prune_containers: true
   prune_builder: false
   prune_volumes: false
 
+  notify_enabled: true
+  notify_on_success: true
+  notify_on_failure: true
+  notify_mode: "persistent_notification"
+
+  ha_notify_service: "notify.notify"
+
+  ntfy_enabled: false
+  ntfy_url: "https://ntfy.sh"
+  ntfy_topic: ""
+  ntfy_token: ""
+
+  gotify_enabled: false
+  gotify_url: ""
+  gotify_token: ""
+  gotify_priority: 5
+
 schema:
   run_day: list(mon|tue|wed|thu|fri|sat|sun)
   run_hour: int(0,23)
+  run_on_start: bool
+
   prune_images: bool
   prune_containers: bool
   prune_builder: bool
   prune_volumes: bool
+
+  notify_enabled: bool
+  notify_on_success: bool
+  notify_on_failure: bool
+  notify_mode: list(persistent_notification|ha_notify|external|all)
+
+  ha_notify_service: str
+
+  ntfy_enabled: bool
+  ntfy_url: str
+  ntfy_topic: str
+  ntfy_token: password
+
+  gotify_enabled: bool
+  gotify_url: str
+  gotify_token: password
+  gotify_priority: int(0,10)
