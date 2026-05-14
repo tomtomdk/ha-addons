@@ -56,6 +56,8 @@ repos:
     target: https://git.ttdk.eu/tomtom/ha-addons.git
     enabled: true
 ```
+> `enabled` is optional and defaults to `true`. Use the YAML editor if the form view gives validation issues with repo lists.
+
 
 ## Token permissions
 

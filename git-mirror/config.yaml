@@ -1,5 +1,5 @@
 name: Git Repository Mirror
-version: "0.1.0"
+version: "0.1.2"
 slug: git_mirror
 description: Mirror Git repositories from GitHub or other Git hosts to GitLab.
 url: https://github.com/tomtomdk/ha-addons/tree/main/git-mirror
@@ -33,11 +33,7 @@ options:
   gotify_token: ""
   discord_enabled: false
   discord_webhook_url: ""
-  repos:
-    - name: str
-      source: str
-      target: str
-      enabled: bool
+  repos: []
 schema:
   sync_interval: int(60,)
   run_on_start: bool
@@ -62,4 +58,4 @@ schema:
     - name: str
       source: str
       target: str
-      enabled: bool
+      enabled: bool?
