@@ -1,0 +1,65 @@
+name: Git Repository Mirror
+version: "0.1.0"
+slug: git_mirror
+description: Mirror Git repositories from GitHub or other Git hosts to GitLab.
+url: https://github.com/tomtomdk/ha-addons/tree/main/git-mirror
+arch:
+  - aarch64
+  - amd64
+  - armhf
+  - armv7
+  - i386
+startup: services
+boot: auto
+init: false
+homeassistant_api: true
+options:
+  sync_interval: 3600
+  run_on_start: true
+  mirror_mode: heads-tags
+  github_username: ""
+  github_token: ""
+  gitlab_username: oauth2
+  gitlab_token: ""
+  notify_on_success: false
+  notify_on_failure: true
+  ha_notifications: true
+  ntfy_enabled: false
+  ntfy_url: "https://ntfy.sh"
+  ntfy_topic: ""
+  ntfy_token: ""
+  gotify_enabled: false
+  gotify_url: ""
+  gotify_token: ""
+  discord_enabled: false
+  discord_webhook_url: ""
+  repos:
+    - name: HA-Addons
+      source: https://github.com/tomtomdk/ha-addons.git
+      target: https://git.ttdk.eu/tomtom/ha-addons.git
+      enabled: true
+schema:
+  sync_interval: int(60,)
+  run_on_start: bool
+  mirror_mode: list(heads-tags|heads-tags-prune|mirror)
+  github_username: str?
+  github_token: password?
+  gitlab_username: str
+  gitlab_token: password?
+  notify_on_success: bool
+  notify_on_failure: bool
+  ha_notifications: bool
+  ntfy_enabled: bool
+  ntfy_url: str?
+  ntfy_topic: str?
+  ntfy_token: password?
+  gotify_enabled: bool
+  gotify_url: str?
+  gotify_token: password?
+  discord_enabled: bool
+  discord_webhook_url: password?
+  repos:
+    - name: str
+      source: str
+      target: str
+      enabled: bool
