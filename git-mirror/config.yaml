@@ -34,10 +34,10 @@ options:
   discord_enabled: false
   discord_webhook_url: ""
   repos:
-    - name: HA-Addons
-      source: https://github.com/tomtomdk/ha-addons.git
-      target: https://git.ttdk.eu/tomtom/ha-addons.git
-      enabled: true
+    - name: str
+      source: str
+      target: str
+      enabled: bool
 schema:
   sync_interval: int(60,)
   run_on_start: bool
