@@ -26,6 +26,7 @@ get_bool() {
 
 RUN_DAY="$(get_config "run_day" "sun")"
 RUN_HOUR="$(get_config "run_hour" "4")"
+RUN_ON_START="$(get_bool "run_on_start" false)"
 RUN_ON_START_DELAY="$(get_config "run_on_start_delay" "900")"
 
 PRUNE_IMAGES="$(get_bool "prune_images" true)"
