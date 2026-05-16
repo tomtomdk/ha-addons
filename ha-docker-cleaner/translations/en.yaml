@@ -1,0 +1,80 @@
+configuration:
+  run_day:
+    name: Run Day
+    description: Select the day of the week when Docker cleanup should run.
+
+  run_hour:
+    name: Run Hour
+    description: Set the hour of the day to run cleanup, using 24-hour format.
+
+  run_on_start:
+    name: Run on Start
+    description: Run a cleanup immediately when the add-on starts.
+
+  prune_images:
+    name: Prune Unused Images
+    description: Remove Docker images that are no longer used by running containers.
+
+  prune_containers:
+    name: Prune Stopped Containers
+    description: Remove containers that are no longer running.
+
+  prune_builder:
+    name: Prune Builder Cache
+    description: Remove Docker build cache to free additional disk space.
+
+  prune_volumes:
+    name: Prune Unused Volumes
+    description: Remove unused Docker volumes. Use with care, as old data may be removed.
+
+  notify_enabled:
+    name: Enable Notifications
+    description: Turn notifications on or off for cleanup results.
+
+  notify_on_success:
+    name: Notify on Success
+    description: Send a notification when cleanup finishes successfully.
+
+  notify_on_failure:
+    name: Notify on Failure
+    description: Send a notification when cleanup finishes with errors.
+
+  notify_mode:
+    name: Notification Mode
+    description: Choose where notifications should be sent.
+
+  ha_notify_service:
+    name: Home Assistant Notify Service
+    description: The Home Assistant notify service to use, for example notify.mobile_app_phone.
+
+  ntfy_enabled:
+    name: Enable ntfy
+    description: Send notifications through ntfy.
+
+  ntfy_url:
+    name: ntfy Server URL
+    description: The base URL of your ntfy server, such as https://ntfy.sh.
+
+  ntfy_topic:
+    name: ntfy Topic
+    description: The ntfy topic to publish notifications to.
+
+  ntfy_token:
+    name: ntfy Access Token
+    description: Optional bearer token for authenticated ntfy servers.
+
+  gotify_enabled:
+    name: Enable Gotify
+    description: Send notifications through Gotify.
+
+  gotify_url:
+    name: Gotify Server URL
+    description: The base URL of your Gotify server.
+
+  gotify_token:
+    name: Gotify App Token
+    description: The application token used to send notifications to Gotify.
+
+  gotify_priority:
+    name: Gotify Priority
+    description: Priority level to use for Gotify notifications, from 0 to 10.
