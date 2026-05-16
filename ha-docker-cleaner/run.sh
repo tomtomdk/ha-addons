@@ -398,14 +398,14 @@ Log: /share/ha-docker-cleaner.log"
 
 log "HA Docker Cleaner add-on started"
 log "Configured schedule: ${RUN_DAY} at ${RUN_HOUR}:00"
-log "Run on start: ${RUN_ON_START}"
-log "Run on start delay: ${RUN_ON_START_DELAY} seconds"
+log "Run on start: ${RUN_ON_START:-false}"
+log "Run on start delay: ${RUN_ON_START_DELAY:-900} seconds"
 log "Volume pruning enabled: ${PRUNE_VOLUMES}"
 
-if [ "$RUN_ON_START" = "true" ]; then
-  if [ "$RUN_ON_START_DELAY" -gt 0 ]; then
-    log "run_on_start is enabled; waiting ${RUN_ON_START_DELAY} seconds before cleanup"
-    sleep "$RUN_ON_START_DELAY"
+if [ "${RUN_ON_START:-false}" = "true" ]; then
+  if [ "${RUN_ON_START_DELAY:-900}" -gt 0 ]; then
+    log "run_on_start is enabled; waiting ${RUN_ON_START_DELAY:-900} seconds before cleanup"
+    sleep "${RUN_ON_START_DELAY:-900}"
   else
     log "run_on_start is enabled; running cleanup immediately"
   fi
