@@ -1,5 +1,5 @@
 name: HA Docker Cleaner
-version: "1.1.2"
+version: "1.1.3"
 slug: ha_docker_cleaner
 description: Automatically prunes unused Docker resources and can send cleanup notifications
 url: "https://github.com/tomtomdk/ha-addons/tree/main/ha-docker-cleaner"
@@ -27,6 +27,7 @@ options:
   run_day: "sun"
   run_hour: 4
   run_on_start: false
+  run_on_start_delay: 900
 
   prune_images: true
   prune_containers: true
