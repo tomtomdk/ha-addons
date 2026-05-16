@@ -26,7 +26,7 @@ get_bool() {
 
 RUN_DAY="$(get_config "run_day" "sun")"
 RUN_HOUR="$(get_config "run_hour" "4")"
-RUN_ON_START="$(get_bool "run_on_start" false)"
+RUN_ON_START_DELAY="$(get_config "run_on_start_delay" "900")"
 
 PRUNE_IMAGES="$(get_bool "prune_images" true)"
 PRUNE_CONTAINERS="$(get_bool "prune_containers" true)"
@@ -398,10 +398,17 @@ Log: /share/ha-docker-cleaner.log"
 log "HA Docker Cleaner add-on started"
 log "Configured schedule: ${RUN_DAY} at ${RUN_HOUR}:00"
 log "Run on start: ${RUN_ON_START}"
+log "Run on start delay: ${RUN_ON_START_DELAY} seconds"
 log "Volume pruning enabled: ${PRUNE_VOLUMES}"
 
 if [ "$RUN_ON_START" = "true" ]; then
-  log "run_on_start is enabled; running cleanup now"
+  if [ "$RUN_ON_START_DELAY" -gt 0 ]; then
+    log "run_on_start is enabled; waiting ${RUN_ON_START_DELAY} seconds before cleanup"
+    sleep "$RUN_ON_START_DELAY"
+  else
+    log "run_on_start is enabled; running cleanup immediately"
+  fi
+
   run_cleanup
 fi
 

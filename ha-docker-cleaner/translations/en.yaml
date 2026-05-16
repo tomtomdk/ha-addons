@@ -11,6 +11,10 @@ configuration:
     name: Run on Start
     description: Run a cleanup immediately when the add-on starts.
 
+  run_on_start_delay:
+    name: Run on Start Delay
+    description: Wait this many seconds before running cleanup after the add-on starts. This helps avoid interfering with Home Assistant or other add-ons during boot.
+
   prune_images:
     name: Prune Unused Images
     description: Remove Docker images that are no longer used by running containers.

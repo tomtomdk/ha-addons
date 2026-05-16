@@ -1,5 +1,5 @@
 name: HA Docker Cleaner
-version: "1.1.1"
+version: "1.1.2"
 slug: ha_docker_cleaner
 description: Automatically prunes unused Docker resources and can send cleanup notifications
 url: "https://github.com/tomtomdk/ha-addons/tree/main/ha-docker-cleaner"
