@@ -1,0 +1,18 @@
+name: "Anycubic Web Token Helper"
+version: "1.0.0"
+slug: "anycubic_web_token_helper"
+description: "Manual helper for saving Anycubic Cloud XX-Token for Home Assistant re-authentication."
+arch:
+  - amd64
+  - aarch64
+  - armv7
+startup: manual
+boot: manual
+init: false
+ports:
+  8099/tcp: 8099
+map:
+  - type: config
+    read_only: false
+options: {}
+schema: {}
