@@ -1,5 +1,5 @@
 name: "Anycubic Web Token Helper"
-version: "1.0.0"
+version: "1.0.1"
 slug: "anycubic_web_token_helper"
 description: "Manual helper for saving Anycubic Cloud XX-Token for Home Assistant re-authentication."
 url: "https://github.com/tomtomdk/ha-addons/tree/main/anycubic_web_token_helper"

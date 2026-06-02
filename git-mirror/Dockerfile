@@ -11,6 +11,7 @@ RUN apk add --no-cache \
     openssh-client
 
 COPY rootfs /
+
 RUN chmod +x /app/run.sh /app/mirror.sh
 
 CMD ["/app/run.sh"]
