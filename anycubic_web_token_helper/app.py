@@ -1,5 +1,5 @@
-from flask import Flask, request, render_template_string
 from datetime import datetime, timezone
+from flask import Flask, request, render_template_string
 
 app = Flask(__name__)
 
@@ -20,19 +20,16 @@ PAGE = """
       line-height: 1.5;
     }
 
-    textarea, input {
+    textarea {
       width: 100%;
       box-sizing: border-box;
+      height: 160px;
       background: #1f2937;
       color: #f9fafb;
       border: 1px solid #374151;
       border-radius: 8px;
       padding: 12px;
       font-family: monospace;
-    }
-
-    textarea {
-      height: 160px;
     }
 
     button {
@@ -108,6 +105,7 @@ PAGE = """
 </html>
 """
 
+
 @app.route("/", methods=["GET", "POST"])
 def index():
     token = None
@@ -126,8 +124,8 @@ def index():
         else:
             saved_at = datetime.now(timezone.utc).isoformat()
 
-            with open(TOKEN_FILE, "w", encoding="utf-8") as f:
-                f.write(token + "\\n")
+            with open(TOKEN_FILE, "w", encoding="utf-8") as file:
+                file.write(token + "\n")
 
     return render_template_string(
         PAGE,
@@ -136,6 +134,7 @@ def index():
         token_length=len(token) if token else 0,
         saved_at=saved_at,
     )
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8099)
