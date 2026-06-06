@@ -1,5 +1,5 @@
 name: "Git Repository Mirror"
-version: "0.1.3"
+version: "0.1.4"
 slug: "git_mirror"
 description: "Mirror Git repositories from GitHub or other Git hosts to GitLab."
 url: "https://github.com/tomtomdk/ha-addons/tree/main/git-mirror"

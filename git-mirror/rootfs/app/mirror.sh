@@ -86,7 +86,7 @@ inject_gitlab_auth() {
     return
   fi
 
-  if [[ "$url" != https://* ]]; then
+  if [[ "$url" != https://* && "$url" != http://* ]]; then
     echo "$url"
     return
   fi
@@ -96,7 +96,11 @@ inject_gitlab_auth() {
   enc_user="$(url_encode "$GITLAB_USERNAME")"
   enc_token="$(url_encode "$GITLAB_TOKEN")"
 
-  echo "${url/https:\/\//https://${enc_user}:${enc_token}@}"
+  if [[ "$url" == https://* ]]; then
+    echo "${url/https:\/\//https://${enc_user}:${enc_token}@}"
+  else
+    echo "${url/http:\/\//http://${enc_user}:${enc_token}@}"
+  fi
 }
 
 sanitize_name() {
