@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.14.5
+
+- Small Patch
+
 ## 1.14.4
 
 - Moved language selection into the Settings page.
