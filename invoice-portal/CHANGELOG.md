@@ -2,7 +2,9 @@
 
 ## 1.14.5
 
-- Small Patch
+- Fixed Home Assistant repository visibility/build compatibility after v1.14.4.
+- Removed legacy build.yaml dependency and changed Dockerfile to use an explicit Home Assistant base image.
+- Added required Home Assistant image labels.
 
 ## 1.14.4
 
@@ -14,7 +16,7 @@
 
 - Made the default CVR User-Agent generic for redistribution.
 - Updated CVR error guidance so each user is told to enter their own company/contact text.
-- Added README notes for configuring CVR lookup without TomTom/Veltrix-specific details.
+- Added README notes for configuring CVR lookup.
 
 ## 1.14.2
 
