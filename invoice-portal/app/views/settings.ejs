@@ -84,7 +84,7 @@
     <label>Afsender <input name="smtp_from" value="<%= settings.smtp_from || '' %>" placeholder="Fx Dit Firma <faktura@domæne.dk>"></label>
     <label class="full">Email emne <input name="invoice_email_subject" value="<%= settings.invoice_email_subject || '' %>"></label>
     <label class="full">Email tekst <textarea name="invoice_email_body" rows="6"><%= settings.invoice_email_body || '' %></textarea></label>
-    <label class="full">Email-signatur <textarea name="email_signature" rows="5" placeholder="Fx Venlig hilsen&#10;Veltrix&#10;faktura@veltrix.dk"><%= settings.email_signature || '' %></textarea></label>
+    <label class="full">Email-signatur <textarea name="email_signature" rows="5" placeholder="Fx Kind regards&#10;My Company&#10;billing@example.com"><%= settings.email_signature || '' %></textarea></label>
 
     <div class="full settings-section-title">
       <h2>IMAP / læs emails</h2>

@@ -1,6 +1,6 @@
 {
   "name": "invoice-portal",
-  "version": "1.14.1",
+  "version": "1.14.3",
   "description": "Self-hosted invoice, time tracking and accounting portal",
   "main": "src/server.js",
   "scripts": {

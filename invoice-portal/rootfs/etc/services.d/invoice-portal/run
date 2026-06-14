@@ -9,6 +9,8 @@ SESSION_SECRET="$(bashio::config 'session_secret')"
 TRUST_PROXY="$(bashio::config 'trust_proxy')"
 CVR_LOOKUP_ENABLED="$(bashio::config 'cvr_lookup_enabled')"
 CVR_USER_AGENT="$(bashio::config 'cvr_user_agent')"
+CVR_TOKEN="$(bashio::config 'cvr_token')"
+CVR_TIMEOUT_MS="$(bashio::config 'cvr_timeout_ms')"
 APP_LANGUAGE="$(bashio::config 'app_language')"
 
 if [[ -z "${SESSION_SECRET}" ]]; then
@@ -28,6 +30,8 @@ export SESSION_SECRET
 export TRUST_PROXY
 export CVR_LOOKUP_ENABLED
 export CVR_USER_AGENT
+export CVR_TOKEN
+export CVR_TIMEOUT_MS
 export APP_LANGUAGE
 export NODE_ENV=production
 export PORT=3000

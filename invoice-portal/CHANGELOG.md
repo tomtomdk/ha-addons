@@ -1,6 +1,12 @@
 # Changelog
 
-## 1.14.1
+## 1.14.3
+
+- Made the default CVR User-Agent generic for redistribution.
+- Updated CVR error guidance so each user is told to enter their own company/contact text.
+- Added README notes for configuring CVR lookup without TomTom/Veltrix-specific details.
+
+## 1.14.2
 
 - Renamed Home Assistant add-on to **Invoice Portal**.
 - Added `app_language` option for Danish/English default language.

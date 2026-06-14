@@ -24,3 +24,19 @@ All persistent data is stored in the add-on `/data` folder, including:
 ## First start
 
 Change `admin_password` in the add-on Configuration tab before exposing the portal.
+## CVR lookup
+
+CVR lookup is enabled by default, but the public CVR service may reject generic or unclear User-Agent values. The default value is intentionally generic:
+
+```yaml
+cvr_user_agent: "Invoice Portal Home Assistant Add-on - replace-with-your-contact"
+```
+
+For reliable lookups, change it in the add-on Configuration tab to something that identifies the installation owner/contact, for example:
+
+```yaml
+cvr_user_agent: "Invoice Portal - My Company - admin@example.com"
+```
+
+Do not leave the example contact as-is if you publish or redistribute the add-on. Each user should use their own contact/company text.
+

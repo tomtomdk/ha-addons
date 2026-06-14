@@ -1,7 +1,7 @@
 name: Invoice Portal
 slug: invoice_portal
 description: Self-hosted invoice, time tracking and accounting portal for small businesses. Danish and English UI included.
-version: 1.14.1
+version: 1.14.3
 url: https://github.com/tomtomdk/ha-addons/tree/main/invoice-portal
 arch:
   - aarch64
@@ -25,7 +25,9 @@ options:
   app_language: da
   trust_proxy: false
   cvr_lookup_enabled: true
-  cvr_user_agent: "Invoice Portal - Home Assistant add-on"
+  cvr_user_agent: "Invoice Portal Home Assistant Add-on - replace-with-your-contact"
+  cvr_token: ""
+  cvr_timeout_ms: 8000
 schema:
   admin_username: str
   admin_password: password
@@ -34,3 +36,5 @@ schema:
   trust_proxy: bool
   cvr_lookup_enabled: bool
   cvr_user_agent: str?
+  cvr_token: password?
+  cvr_timeout_ms: int

@@ -86,7 +86,16 @@ async function lookupCvr() {
   box.innerHTML = '<div class="alert">Søger...</div>';
 
   try {
-    const response = await fetch('/api/cvr?q=' + encodeURIComponent(q));
+    const basePath = window.INVOICE_PORTAL_BASE_PATH || '';
+    const controller = new AbortController();
+    const timeout = window.setTimeout(() => controller.abort(), 9000);
+    const response = await fetch(`${basePath}/api/cvr?q=${encodeURIComponent(q)}`, {
+      credentials: 'same-origin',
+      cache: 'no-store',
+      signal: controller.signal,
+      headers: { 'Accept': 'application/json' }
+    });
+    window.clearTimeout(timeout);
     const data = await response.json();
 
     if (!data.ok) {
@@ -98,13 +107,13 @@ async function lookupCvr() {
     box.innerHTML = `
       <div class="alert success">
         Fundet: <strong>${escapeHtml(data.name || '')}</strong>
-        ${data.cvr ? ' · CVR: ' + escapeHtml(data.cvr) : ''}
+        ${data.cvr ? ' · CVR: ' + escapeHtml(data.cvr) : ''}${data.source ? ' · ' + escapeHtml(data.source) : ''}
         <br>
         <button type="button" class="small-button" onclick="applyCvr()">Brug oplysninger</button>
       </div>
     `;
   } catch (error) {
-    box.innerHTML = '<div class="alert error">CVR-opslag fejlede.</div>';
+    box.innerHTML = `<div class="alert error">CVR-opslag fejlede: ${escapeHtml(error.message || 'Ukendt fejl')}</div>`;
   }
 }
 
