@@ -4,7 +4,7 @@
 
 - Made the default CVR User-Agent generic for redistribution.
 - Updated CVR error guidance so each user is told to enter their own company/contact text.
-- Added README notes for configuring CVR lookup without TomTom/Veltrix-specific details.
+- Added README notes for configuring CVR lookup.
 
 ## 1.14.2
 
