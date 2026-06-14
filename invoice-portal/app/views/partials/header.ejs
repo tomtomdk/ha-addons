@@ -44,20 +44,17 @@
           <span id="mailUnreadBadge" class="mail-unread-badge" hidden>0</span>
         </a>
 
-        <a href="<%= basePath %>/settings" class="<%= currentPath === '/settings' ? 'active' : '' %>"><%= t('settings') %></a>
-
-        <form class="language-form" action="<%= basePath %>/language" method="post">
-          <input type="hidden" name="return_to" value="<%= currentPath %>">
-          <label class="sr-only" for="languageSelect"><%= t('language') %></label>
-          <select id="languageSelect" name="language" onchange="this.form.submit()" title="<%= t('language') %>">
-            <option value="da" <%= language === 'da' ? 'selected' : '' %>>DA</option>
-            <option value="en" <%= language === 'en' ? 'selected' : '' %>>EN</option>
-          </select>
-        </form>
-
-        <form action="<%= basePath %>/logout" method="post">
-          <button class="link-button nav-logout-button" type="submit"><%= t('logout') %></button>
-        </form>
+        <div class="nav-group settings-nav-group">
+          <a href="<%= basePath %>/settings" class="nav-group-trigger <%= currentPath === '/settings' || currentPath === '/mail-accounts' ? 'active' : '' %>"><%= t('settings') %></a>
+          <div class="nav-dropdown nav-dropdown-right">
+            <a href="<%= basePath %>/settings"><%= t('settingsOverview') %></a>
+            <a href="<%= basePath %>/settings#language-settings"><%= t('language') %></a>
+            <a href="<%= basePath %>/mail-accounts"><%= t('mailAccounts') %></a>
+            <form class="nav-dropdown-form" action="<%= basePath %>/logout" method="post">
+              <button class="nav-dropdown-button danger-text" type="submit"><%= t('logout') %></button>
+            </form>
+          </div>
+        </div>
       </nav>
     <% } %>
   </header>

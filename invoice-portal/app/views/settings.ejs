@@ -2,8 +2,8 @@
 
 <div class="page-header">
   <div>
-    <h1>Indstillinger</h1>
-    <p>Firmaoplysninger til faktura-PDF'er.</p>
+    <h1><%= t('settings') %></h1>
+    <p>Firmaoplysninger, sprog, konto og PDF/email-opsætning.</p>
   </div>
 </div>
 
@@ -11,6 +11,34 @@
   <div class="alert success">Indstillinger gemt.</div>
 <% } %>
 
+
+<section class="card settings-submenu" id="language-settings">
+  <h2>Konto og sprog</h2>
+  <p class="muted">Skift portalsprog eller log ud af portalen.</p>
+  <div class="settings-actions-grid">
+    <form class="settings-mini-form" action="<%= basePath %>/language" method="post">
+      <input type="hidden" name="return_to" value="/settings">
+      <label>
+        <%= t('language') %>
+        <select name="language">
+          <option value="da" <%= language === 'da' ? 'selected' : '' %>>Dansk</option>
+          <option value="en" <%= language === 'en' ? 'selected' : '' %>>English</option>
+        </select>
+      </label>
+      <button type="submit">Gem sprog</button>
+    </form>
+
+    <div class="settings-mini-form">
+      <label>
+        Konto
+        <span class="readonly-field"><%= user && user.username ? user.username : 'Admin' %></span>
+      </label>
+      <form action="<%= basePath %>/logout" method="post">
+        <button class="danger" type="submit"><%= t('logout') %></button>
+      </form>
+    </div>
+  </div>
+</section>
 
 <section class="card settings-submenu">
   <h2>Undermenuer</h2>

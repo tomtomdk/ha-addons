@@ -1,10 +1,16 @@
 # Changelog
 
+## 1.14.4
+
+- Moved language selection into the Settings page.
+- Moved logout into the Settings menu/dropdown and Settings page account section.
+- Removed the separate top-bar language selector and standalone logout button.
+
 ## 1.14.3
 
 - Made the default CVR User-Agent generic for redistribution.
 - Updated CVR error guidance so each user is told to enter their own company/contact text.
-- Added README notes for configuring CVR lookup.
+- Added README notes for configuring CVR lookup without TomTom/Veltrix-specific details.
 
 ## 1.14.2
 

@@ -1099,3 +1099,68 @@ button:disabled {
   white-space: nowrap;
   border: 0;
 }
+
+/* v1.14.4 settings/account menu cleanup */
+.nav-dropdown-right {
+  left: auto;
+  right: 0;
+}
+
+.nav-dropdown-form {
+  margin: 4px 0 0;
+  padding-top: 4px;
+  border-top: 1px solid var(--line);
+}
+
+.nav-dropdown-button {
+  display: block;
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--muted);
+  text-align: left;
+  font: inherit;
+  font-weight: 700;
+}
+
+.nav-dropdown-button:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text);
+}
+
+.nav-dropdown-button.danger-text {
+  color: var(--danger);
+}
+
+.settings-actions-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.settings-mini-form {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.readonly-field {
+  display: block;
+  width: 100%;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text);
+  border-radius: 12px;
+  padding: 12px 13px;
+}
+
+@media (max-width: 760px) {
+  .settings-actions-grid {
+    grid-template-columns: 1fr;
+  }
+}
