@@ -1,7 +1,7 @@
 name: Invoice Portal
 slug: invoice_portal
 description: Self-hosted invoice, time tracking and accounting portal for small businesses. Danish and English UI included.
-version: "1.14.5"
+version: "1.14.6"
 url: https://github.com/tomtomdk/ha-addons/tree/main/invoice-portal
 arch:
   - aarch64

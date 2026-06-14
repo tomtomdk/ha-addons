@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.14.6
+
+- Store/repository repair release.
+- Confirmed top-level `repository.yaml` is included.
+- Confirmed `invoice-portal/config.yaml` is valid multi-line YAML.
+- Added `.gitattributes` to keep YAML/shell files with LF line endings.
+
 ## 1.14.5
 
 - Fixed Home Assistant repository visibility/build compatibility after v1.14.4.
@@ -16,7 +23,7 @@
 
 - Made the default CVR User-Agent generic for redistribution.
 - Updated CVR error guidance so each user is told to enter their own company/contact text.
-- Added README notes for configuring CVR lookup.
+- Added README notes for configuring CVR lookup without TomTom/Veltrix-specific details.
 
 ## 1.14.2
 
