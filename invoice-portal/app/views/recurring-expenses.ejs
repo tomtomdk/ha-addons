@@ -1,0 +1,120 @@
+<%- include("partials/header") %>
+
+<div class="page-header">
+  <div>
+    <h1>Faste udgifter</h1>
+    <p>Undermenu under Udgifter. Opret tilbagevendende udgifter, fx bankgebyrer, software, telefon eller abonnementer.</p>
+  </div>
+  <div class="actions">
+    <a class="button secondary-link" href="<%= basePath %>/expenses">Tilbage til Udgifter</a>
+  </div>
+</div>
+
+<% if (saved) { %>
+  <div class="alert success">Tilbagevendende udgift gemt.</div>
+<% } %>
+
+<% if (created !== "") { %>
+  <div class="alert success">Oprettede <strong><%= created %></strong> udgiftspost(er).</div>
+<% } %>
+
+<section class="card">
+  <h2>Opret fast udgift</h2>
+  <form method="post" action="<%= basePath %>/recurring-expenses" class="form grid-form">
+    <label>Beskrivelse <input name="description" required placeholder="Fx månedligt bankgebyr"></label>
+    <label>Leverandør <input name="supplier" placeholder="Fx banknavn"></label>
+    <label>
+      Kategori
+      <select name="category">
+        <option>Bankgebyrer</option>
+        <option>Materialer</option>
+        <option>Værktøj</option>
+        <option>Software</option>
+        <option>Transport</option>
+        <option>Telefon/internet</option>
+        <option>Diverse</option>
+      </select>
+    </label>
+    <label>Beløb <input name="amount" type="number" step="0.01" required></label>
+    <label>
+      Frekvens
+      <select name="frequency">
+        <option value="monthly">Månedligt</option>
+        <option value="weekly">Ugentligt</option>
+        <option value="quarterly">Kvartalsvis</option>
+        <option value="yearly">Årligt</option>
+      </select>
+    </label>
+    <label>Startdato <input name="start_date" type="date" required></label>
+    <label>Næste oprettelsesdato <input name="next_date" type="date" required></label>
+    <label>Bilag-prefix <input name="bilag_prefix" placeholder="Fx BANK"></label>
+    <label class="full">Note <textarea name="notes" rows="2"></textarea></label>
+    <div class="full">
+      <button type="submit">Gem fast udgift</button>
+    </div>
+  </form>
+</section>
+
+<section class="card">
+  <h2>Opret forfaldne faste udgifter</h2>
+  <p class="muted">Dette opretter almindelige udgiftsposter for aktive faste udgifter med næste dato til og med valgt dato.</p>
+  <form method="post" action="<%= basePath %>/recurring-expenses/generate" class="inline-form">
+    <label>
+      Opret til og med
+      <input name="until_date" type="date" required>
+    </label>
+    <button type="submit">Opret forfaldne</button>
+  </form>
+</section>
+
+<section class="card">
+  <h2>Alle faste udgifter</h2>
+  <% if (!recurring.length) { %>
+    <p>Ingen faste udgifter endnu.</p>
+  <% } else { %>
+    <table>
+      <thead>
+        <tr>
+          <th>Status</th>
+          <th>Beskrivelse</th>
+          <th>Leverandør</th>
+          <th>Kategori</th>
+          <th>Frekvens</th>
+          <th>Næste dato</th>
+          <th class="right">Beløb</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% recurring.forEach(item => { %>
+          <tr>
+            <td><span class="badge"><%= item.active ? "Aktiv" : "Pause" %></span></td>
+            <td><%= item.description %></td>
+            <td><%= item.supplier %></td>
+            <td><span class="badge"><%= item.category %></span></td>
+            <td><%= item.frequency %></td>
+            <td><%= item.next_date %></td>
+            <td class="right"><%= money(item.amount) %></td>
+            <td class="right">
+              <form method="post" action="<%= basePath %>/recurring-expenses/<%= item.id %>/toggle" class="table-action">
+                <button class="link-button" type="submit"><%= item.active ? "Pause" : "Aktivér" %></button>
+              </form>
+              <form method="post" action="<%= basePath %>/recurring-expenses/<%= item.id %>/delete" class="table-action" onsubmit="return confirm('Slet den faste udgift? Allerede oprettede udgifter bliver ikke slettet.')">
+                <button class="link-button danger-link" type="submit">Slet</button>
+              </form>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  <% } %>
+</section>
+
+<script>
+const today = new Date().toISOString().slice(0, 10);
+for (const input of document.querySelectorAll('input[type="date"]')) {
+  if (!input.value) input.value = today;
+}
+</script>
+
+<%- include("partials/footer") %>

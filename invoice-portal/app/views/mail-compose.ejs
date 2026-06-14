@@ -1,0 +1,56 @@
+<%- include("partials/header") %>
+
+<div class="page-header">
+  <div>
+    <h1>Skriv email</h1>
+    <p>Send en almindelig email fra en af dine opsatte mailkonti.</p>
+  </div>
+  <a class="button secondary-link" href="<%= basePath %>/mail?account=<%= selectedAccountId %>">Tilbage til Mail</a>
+</div>
+
+<section class="card">
+  <form method="post" action="<%= basePath %>/mail/send" class="form">
+    <label>
+      Fra konto
+      <select name="account">
+        <% accounts.forEach(account => { %>
+          <option value="<%= account.id %>" <%= String(selectedAccountId) === String(account.id) ? "selected" : "" %>><%= account.name %> · <%= account.email || account.smtp_user || account.imap_user %></option>
+        <% }) %>
+      </select>
+    </label>
+
+    <label>
+      Til
+      <input
+        name="to"
+        type="email"
+        value="<%= to %>"
+        required
+        placeholder="Søg kunde eller skriv emailadresse"
+        list="customerEmailSuggestions"
+        autocomplete="off"
+      >
+      <small class="field-help">Skriv kundens navn eller email for at søge i kundelisten.</small>
+    </label>
+
+    <datalist id="customerEmailSuggestions">
+      <% (customerEmails || []).forEach(customer => { %>
+        <option value="<%= customer.email %>"><%= customer.name %> · <%= customer.email %></option>
+      <% }) %>
+    </datalist>
+
+    <label>
+      Emne
+      <input name="subject" value="<%= subject %>" required>
+    </label>
+
+    <label>
+      Besked
+      <textarea name="body" rows="14" required><%= body %></textarea>
+    </label>
+
+    <button type="submit">Send email</button>
+  </form>
+</section>
+
+<%- include("partials/footer") %>

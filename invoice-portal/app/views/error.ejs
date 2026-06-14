@@ -1,0 +1,22 @@
+<%- include("partials/header") %>
+
+<section class="card narrow message-card">
+  <div class="message-icon"><%= icon || "!" %></div>
+
+  <h1><%= title || "Der opstod en fejl" %></h1>
+
+  <p class="message-text"><%= message || "Handlingen kunne ikke gennemføres." %></p>
+
+  <% if (details) { %>
+    <p class="message-details"><%= details %></p>
+  <% } %>
+
+  <div class="message-actions">
+    <a class="button" href="<%= backHref || '/' %>"><%= backLabel || 'Tilbage' %></a>
+    <% if (secondaryHref && secondaryLabel) { %>
+      <a class="button secondary-link" href="<%= secondaryHref %>"><%= secondaryLabel %></a>
+    <% } %>
+  </div>
+</section>
+
+<%- include("partials/footer") %>

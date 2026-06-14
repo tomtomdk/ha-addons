@@ -1,0 +1,38 @@
+<%- include("partials/header") %>
+
+<div class="page-header">
+  <div>
+    <h1>Redigér kunde</h1>
+    <p><%= customer.name %></p>
+  </div>
+  <a class="button secondary-link" href="<%= basePath %>/customers">Tilbage</a>
+</div>
+
+<section class="card">
+  <form method="post" action="<%= basePath %>/customers/<%= customer.id %>/edit" class="form grid-form">
+    <label>
+      Kundetype
+      <select name="type">
+        <option value="private" <%= customer.type === "private" ? "selected" : "" %>>Privatperson</option>
+        <option value="company" <%= customer.type === "company" ? "selected" : "" %>>Virksomhed</option>
+      </select>
+    </label>
+    <label>Navn / firmanavn <input name="name" value="<%= customer.name %>" required></label>
+    <label>CVR <input name="cvr" value="<%= customer.cvr %>"></label>
+    <label>Adresse <input name="address" value="<%= customer.address %>"></label>
+    <label>Postnr. og by <input name="zip_city" value="<%= customer.zip_city %>"></label>
+    <label>Email <input name="email" type="email" value="<%= customer.email %>"></label>
+    <label>Telefon <input name="phone" value="<%= customer.phone %>"></label>
+    <div class="full">
+      <button type="submit">Gem ændringer</button>
+    </div>
+  </form>
+</section>
+
+<section class="card">
+  <form method="post" action="<%= basePath %>/customers/<%= customer.id %>/delete" onsubmit="return confirm('Slet kunden permanent?')">
+    <button class="danger" type="submit">Slet kunde</button>
+  </form>
+</section>
+
+<%- include("partials/footer") %>

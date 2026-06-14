@@ -1,0 +1,127 @@
+<%- include("partials/header") %>
+
+<div class="page-header">
+  <div>
+    <h1>Tid</h1>
+    <p>Opret opgaver og registrér tid over flere dage.</p>
+  </div>
+</div>
+
+<% if (saved) { %>
+  <div class="alert success">Opgave gemt.</div>
+<% } %>
+<% if (typeof invoiced !== "undefined" && invoiced) { %>
+  <div class="alert success">Tidsopgaven blev overført til faktura.</div>
+<% } %>
+<% if (typeof expensed !== "undefined" && expensed) { %>
+  <div class="alert success">Tidsopgaven blev overført til udgifter.</div>
+<% } %>
+
+<section class="stats stats-four">
+  <div class="stat-card">
+    <span>Ikke faktureret tid</span>
+    <strong><%= formatDuration(billingStats.unbilledIncomeSeconds) %></strong>
+  </div>
+  <div class="stat-card">
+    <span>Ikke faktureret værdi</span>
+    <strong><%= money(billingStats.unbilledIncomeAmount) %></strong>
+  </div>
+  <div class="stat-card">
+    <span>Ikke bogført udgiftstid</span>
+    <strong><%= formatDuration(billingStats.unbookedExpenseSeconds) %></strong>
+  </div>
+  <div class="stat-card">
+    <span>Ikke bogført udgiftsværdi</span>
+    <strong><%= money(billingStats.unbookedExpenseAmount) %></strong>
+  </div>
+</section>
+
+<section class="card">
+  <h2>Ny opgave</h2>
+  <form method="post" action="<%= basePath %>/time/tasks" class="form grid-form">
+    <label>Navn <input name="name" required placeholder="Fx Webside rettelser, havearbejde, indkøb"></label>
+    <label>
+      Type
+      <select name="kind">
+        <option value="income">Indtægt</option>
+        <option value="expense">Udgift</option>
+      </select>
+    </label>
+    <label>
+      Kunde / punkt
+      <select name="customer_id">
+        <option value="">Ingen kunde</option>
+        <% customers.forEach(customer => { %>
+          <option value="<%= customer.id %>"><%= customer.name %></option>
+        <% }) %>
+      </select>
+    </label>
+    <label>Timepris / sats <input name="hourly_rate" inputmode="decimal" placeholder="0,00"></label>
+    <label class="full">Note <textarea name="notes" rows="3" placeholder="Valgfri note"></textarea></label>
+    <div class="full">
+      <button type="submit">Opret opgave</button>
+    </div>
+  </form>
+</section>
+
+<section class="card">
+  <h2>Opgaver</h2>
+
+  <% if (!tasks.length) { %>
+    <p>Ingen tidsopgaver endnu.</p>
+  <% } else { %>
+    <table>
+      <thead>
+        <tr>
+          <th>Opgave</th>
+          <th>Type</th>
+          <th>Kunde/punkt</th>
+          <th>Total tid</th>
+          <th>Status</th>
+          <th>Overført</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% tasks.forEach(task => { %>
+          <tr class="<%= task.running_count ? 'time-running-row' : '' %>">
+            <td>
+              <strong><%= task.name %></strong>
+              <% if (task.notes) { %>
+                <div class="muted table-note"><%= task.notes %></div>
+              <% } %>
+            </td>
+            <td>
+              <span class="badge <%= task.kind === 'income' ? 'badge-income' : 'badge-expense' %>">
+                <%= task.kind === "income" ? "Indtægt" : "Udgift" %>
+              </span>
+            </td>
+            <td><%= task.customer_name || "-" %></td>
+            <td><strong><%= formatDuration(task.total_seconds) %></strong></td>
+            <td>
+              <% if (task.running_count) { %>
+                <span class="badge badge-running">Kører</span>
+              <% } else if (task.status === "active") { %>
+                <span class="badge">Aktiv</span>
+              <% } else { %>
+                <span class="badge read-badge">Lukket</span>
+              <% } %>
+            </td>
+            <td>
+              <% if (task.invoice_id) { %>
+                <a href="<%= basePath %>/invoices/<%= task.invoice_id %>"><span class="badge badge-income"><%= task.linked_invoice_no || "Faktura" %></span></a>
+              <% } else if (task.expense_id) { %>
+                <span class="badge badge-expense">Udgift</span>
+              <% } else { %>
+                <span class="muted">Ikke endnu</span>
+              <% } %>
+            </td>
+            <td class="right"><a href="<%= basePath %>/time/tasks/<%= task.id %>">Åbn</a></td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  <% } %>
+</section>
+
+<%- include("partials/footer") %>

@@ -1,0 +1,44 @@
+<%- include("partials/header") %>
+
+<div class="page-header">
+  <div>
+    <h1><%= message.subject %></h1>
+    <p><%= message.date ? new Date(message.date).toLocaleString("da-DK") : "" %></p>
+  </div>
+  <div class="actions">
+    <a class="button" href="<%= basePath %>/mail/<%= message.uid %>/reply?account=<%= accountId %>">Svar</a>
+    <form method="post" action="<%= basePath %>/mail/<%= message.uid %>/mark-unread" class="inline-button-form">
+      <input type="hidden" name="account" value="<%= accountId %>">
+      <button type="submit" class="secondary-button">Marker som ulæst</button>
+    </form>
+    <a class="button secondary-link" href="<%= basePath %>/mail?account=<%= accountId %>">Tilbage til Mail</a>
+  </div>
+</div>
+
+<section class="card">
+  <div class="mail-meta">
+    <p><strong>Fra:</strong> <%= message.from %></p>
+    <p><strong>Til:</strong> <%= message.to %></p>
+    <% if (message.cc) { %><p><strong>CC:</strong> <%= message.cc %></p><% } %>
+  </div>
+
+  <% if (message.attachments.length) { %>
+    <div class="attachment-preview">
+      <strong>Vedhæftninger:</strong>
+      <% message.attachments.forEach(att => { %>
+        <div><%= att.filename %> · <%= att.contentType %> · <%= Math.round((att.size || 0) / 1024) %> KB</div>
+      <% }) %>
+      <p class="muted">Visning/download af vedhæftninger er ikke aktiveret endnu.</p>
+    </div>
+  <% } %>
+
+  <div class="mail-body">
+    <% if (message.html) { %>
+      <iframe class="mail-frame" srcdoc="<%- message.html.replace(/"/g, '&quot;') %>"></iframe>
+    <% } else { %>
+      <pre><%= message.text %></pre>
+    <% } %>
+  </div>
+</section>
+
+<%- include("partials/footer") %>

@@ -1,0 +1,67 @@
+<%- include("partials/header") %>
+
+<div class="page-header">
+  <div>
+    <h1>Send faktura <%= invoice.invoice_no %></h1>
+    <p>Send faktura-PDF direkte til kunden som vedhæftet fil.</p>
+  </div>
+  <a class="button secondary-link" href="<%= basePath %>/invoices/<%= invoice.id %>">Tilbage til faktura</a>
+</div>
+
+<% if (!smtpReady) { %>
+  <div class="alert error">
+    SMTP er ikke sat op endnu. Gå til <a href="<%= basePath %>/settings">Indstillinger</a> og udfyld Email / SMTP først.
+  </div>
+<% } %>
+
+<section class="card">
+  <form method="post" action="<%= basePath %>/invoices/<%= invoice.id %>/email" class="form">
+    <label>
+      Til
+      <input
+        name="to"
+        type="email"
+        value="<%= to %>"
+        required
+        placeholder="Søg kunde eller skriv emailadresse"
+        list="customerEmailSuggestions"
+        autocomplete="off"
+      >
+      <small class="field-help">Skriv kundens navn eller email for at søge i kundelisten.</small>
+    </label>
+
+    <datalist id="customerEmailSuggestions">
+      <% (customerEmails || []).forEach(customer => { %>
+        <option value="<%= customer.email %>"><%= customer.name %> · <%= customer.email %></option>
+      <% }) %>
+    </datalist>
+
+    <label>
+      Emne
+      <input name="subject" value="<%= subject %>" required>
+    </label>
+
+    <label>
+      Besked
+      <textarea name="body" rows="9" required><%= body %></textarea>
+    </label>
+
+    <div class="attachment-preview">
+      <strong>Vedhæftning:</strong>
+      <span><%= invoice.invoice_no %>.pdf</span>
+    </div>
+
+    <button type="submit" <%= smtpReady ? "" : "disabled" %>>Send faktura</button>
+  </form>
+</section>
+
+<section class="card">
+  <h2>SMTP status</h2>
+  <% if (smtpReady) { %>
+    <p class="muted">SMTP ser ud til at være udfyldt. Hvis afsendelse fejler, så tjek port, SSL/TLS og om udbyderen kræver app password.</p>
+  <% } else { %>
+    <p class="muted">Manglende SMTP host, port eller afsenderadresse.</p>
+  <% } %>
+</section>
+
+<%- include("partials/footer") %>

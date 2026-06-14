@@ -1,0 +1,133 @@
+<%- include("partials/header") %>
+
+<div class="page-header">
+  <div>
+    <h1>Kunder</h1>
+    <p>Gem kunder, så de hurtigt kan vælges på en faktura.</p>
+  </div>
+</div>
+
+<section class="card">
+  <h2>Opret kunde</h2>
+
+  <div class="cvr-box">
+    <label>
+      Søg virksomhed via navn eller CVR
+      <div class="search-row">
+        <input id="cvrSearch" placeholder="Fx firmanavn eller 12345678">
+        <button type="button" class="secondary" onclick="lookupCvr()">Søg CVR</button>
+      </div>
+    </label>
+    <div id="cvrResult" class="lookup-result"></div>
+  </div>
+
+  <form method="post" action="<%= basePath %>/customers" class="form grid-form" id="customerForm">
+    <label>
+      Kundetype
+      <select name="type" id="type">
+        <option value="private">Privatperson</option>
+        <option value="company">Virksomhed</option>
+      </select>
+    </label>
+    <label>Navn / firmanavn <input name="name" id="name" required></label>
+    <label>CVR <input name="cvr" id="cvr"></label>
+    <label>Adresse <input name="address" id="address"></label>
+    <label>Postnr. og by <input name="zip_city" id="zip_city"></label>
+    <label>Email <input name="email" id="email" type="email"></label>
+    <label>Telefon <input name="phone" id="phone"></label>
+    <div class="full">
+      <button type="submit">Gem kunde</button>
+    </div>
+  </form>
+</section>
+
+<section class="card">
+  <h2>Alle kunder</h2>
+  <% if (!customers.length) { %>
+    <p>Ingen kunder endnu.</p>
+  <% } else { %>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Navn</th>
+          <th>Email</th>
+          <th>Telefon</th>
+          <th>CVR</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% customers.forEach(customer => { %>
+          <tr>
+            <td><span class="badge"><%= customer.type === "company" ? "Firma" : "Privat" %></span></td>
+            <td><%= customer.name %></td>
+            <td><%= customer.email %></td>
+            <td><%= customer.phone %></td>
+            <td><%= customer.cvr %></td>
+            <td class="right"><a href="<%= basePath %>/customers/<%= customer.id %>/edit">Redigér</a></td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  <% } %>
+</section>
+
+<script>
+async function lookupCvr() {
+  const q = document.getElementById("cvrSearch").value.trim();
+  const box = document.getElementById("cvrResult");
+
+  if (!q) {
+    box.innerHTML = '<div class="alert error">Skriv et firmanavn eller CVR-nummer først.</div>';
+    return;
+  }
+
+  box.innerHTML = '<div class="alert">Søger...</div>';
+
+  try {
+    const response = await fetch('/api/cvr?q=' + encodeURIComponent(q));
+    const data = await response.json();
+
+    if (!data.ok) {
+      box.innerHTML = `<div class="alert error">${data.message || data.error || 'Ingen virksomhed fundet.'}</div>`;
+      return;
+    }
+
+    window.latestCvrResult = data;
+    box.innerHTML = `
+      <div class="alert success">
+        Fundet: <strong>${escapeHtml(data.name || '')}</strong>
+        ${data.cvr ? ' · CVR: ' + escapeHtml(data.cvr) : ''}
+        <br>
+        <button type="button" class="small-button" onclick="applyCvr()">Brug oplysninger</button>
+      </div>
+    `;
+  } catch (error) {
+    box.innerHTML = '<div class="alert error">CVR-opslag fejlede.</div>';
+  }
+}
+
+function applyCvr() {
+  const data = window.latestCvrResult || {};
+  document.getElementById("type").value = "company";
+  document.getElementById("name").value = data.name || "";
+  document.getElementById("cvr").value = data.cvr || "";
+  document.getElementById("address").value = data.address || "";
+  document.getElementById("zip_city").value = data.zip_city || "";
+  document.getElementById("phone").value = data.phone || "";
+  document.getElementById("email").value = data.email || "";
+}
+
+function escapeHtml(str) {
+  return String(str).replace(/[&<>"']/g, (m) => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#039;'
+  }[m]));
+}
+</script>
+
+<%- include("partials/footer") %>

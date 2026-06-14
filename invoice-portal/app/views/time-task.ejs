@@ -1,0 +1,167 @@
+<%- include("partials/header") %>
+
+<div class="page-header">
+  <div>
+    <h1><%= task.name %></h1>
+    <p>
+      <a href="<%= basePath %>/time">Tilbage til Tid</a>
+      · Total tid: <strong><%= formatDuration(task.total_seconds) %></strong>
+      <% if (task.hourly_rate > 0) { %>
+        · Estimat: <strong><%= money((task.total_seconds / 3600) * task.hourly_rate) %></strong>
+      <% } %>
+    </p>
+  </div>
+  <div class="actions">
+    <% if (openEntry) { %>
+      <form method="post" action="<%= basePath %>/time/tasks/<%= task.id %>/stop">
+        <button type="submit">Stop timer</button>
+      </form>
+    <% } else if (task.status === "active") { %>
+      <form method="post" action="<%= basePath %>/time/tasks/<%= task.id %>/start">
+        <button type="submit">Start timer</button>
+      </form>
+    <% } %>
+  </div>
+</div>
+
+<% if (openEntry) { %>
+  <div class="alert success">
+    Timer kører siden <strong><%= formatDateTimeDk(openEntry.started_at) %></strong>.
+  </div>
+<% } %>
+
+<% if (task.invoice_id) { %>
+  <div class="alert success">
+    Opgaven er overført til <a href="<%= basePath %>/invoices/<%= task.invoice_id %>">faktura <%= task.linked_invoice_no || "" %></a>.
+  </div>
+<% } else if (task.expense_id) { %>
+  <div class="alert success">
+    Opgaven er overført til udgifter.
+  </div>
+<% } %>
+
+<section class="stats stats-four">
+  <div class="stat-card">
+    <span>Afsluttet tid</span>
+    <strong><%= formatDuration(billingSummary.total_seconds) %></strong>
+  </div>
+  <div class="stat-card">
+    <span>Fakturerbare timer</span>
+    <strong><%= billingSummary.hours.toFixed(2).replace(".", ",") %></strong>
+  </div>
+  <div class="stat-card">
+    <span>Sats</span>
+    <strong><%= money(task.hourly_rate || 0) %></strong>
+  </div>
+  <div class="stat-card">
+    <span>Estimat / beløb</span>
+    <strong><%= money(billingSummary.amount) %></strong>
+  </div>
+</section>
+
+<section class="card">
+  <h2>Opgave</h2>
+  <form method="post" action="<%= basePath %>/time/tasks/<%= task.id %>/update" class="form grid-form">
+    <label>Navn <input name="name" value="<%= task.name %>" required></label>
+    <label>
+      Type
+      <select name="kind">
+        <option value="income" <%= task.kind === "income" ? "selected" : "" %>>Indtægt</option>
+        <option value="expense" <%= task.kind === "expense" ? "selected" : "" %>>Udgift</option>
+      </select>
+    </label>
+    <label>
+      Kunde / punkt
+      <select name="customer_id">
+        <option value="">Ingen kunde</option>
+        <% customers.forEach(customer => { %>
+          <option value="<%= customer.id %>" <%= Number(task.customer_id || 0) === Number(customer.id) ? "selected" : "" %>><%= customer.name %></option>
+        <% }) %>
+      </select>
+    </label>
+    <label>Timepris / sats <input name="hourly_rate" inputmode="decimal" value="<%= task.hourly_rate || 0 %>"></label>
+    <label class="full">Note <textarea name="notes" rows="3"><%= task.notes || "" %></textarea></label>
+    <div class="full actions">
+      <button type="submit">Gem opgave</button>
+    </div>
+  </form>
+
+  <div class="actions time-task-actions">
+    <% if (task.kind === "income" && !task.invoice_id) { %>
+      <form method="post" action="<%= basePath %>/time/tasks/<%= task.id %>/create-invoice" onsubmit="return confirm('Opret faktura fra denne tidsopgave?')">
+        <button type="submit">Opret faktura</button>
+      </form>
+    <% } %>
+    <% if (task.kind === "expense" && !task.expense_id) { %>
+      <form method="post" action="<%= basePath %>/time/tasks/<%= task.id %>/create-expense" onsubmit="return confirm('Opret udgift fra denne tidsopgave?')">
+        <button type="submit">Opret udgift</button>
+      </form>
+    <% } %>
+    <% if (task.invoice_id || task.expense_id) { %>
+      <form method="post" action="<%= basePath %>/time/tasks/<%= task.id %>/clear-billing" onsubmit="return confirm('Fjern kun koblingen til faktura/udgift? Selve fakturaen eller udgiften slettes ikke.')">
+        <button type="submit" class="secondary-button">Fjern overførselsmarkering</button>
+      </form>
+    <% } %>
+    <form method="post" action="<%= basePath %>/time/tasks/<%= task.id %>/toggle-status">
+      <button type="submit" class="secondary-button"><%= task.status === "active" ? "Luk opgave" : "Genåbn opgave" %></button>
+    </form>
+    <form method="post" action="<%= basePath %>/time/tasks/<%= task.id %>/delete" onsubmit="return confirm('Slet opgave og alle tidsregistreringer permanent?')">
+      <button type="submit" class="link-button danger-link">Slet opgave</button>
+    </form>
+  </div>
+</section>
+
+<section class="card">
+  <h2>Manuel tidsregistrering</h2>
+  <form method="post" action="<%= basePath %>/time/tasks/<%= task.id %>/manual-entry" class="form grid-form">
+    <label>Start <input name="started_at" type="datetime-local" required></label>
+    <label>Slut <input name="ended_at" type="datetime-local" required></label>
+    <label class="full">Note <input name="note" placeholder="Valgfri note til registreringen"></label>
+    <div class="full">
+      <button type="submit">Tilføj tid</button>
+    </div>
+  </form>
+</section>
+
+<section class="card">
+  <h2>Tidsregistreringer</h2>
+
+  <% if (!entries.length) { %>
+    <p>Ingen registreringer endnu.</p>
+  <% } else { %>
+    <table>
+      <thead>
+        <tr>
+          <th>Start</th>
+          <th>Slut</th>
+          <th>Varighed</th>
+          <th>Note</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% entries.forEach(entry => { %>
+          <tr class="<%= !entry.ended_at ? 'time-running-row' : '' %>">
+            <td><%= formatDateTimeDk(entry.started_at) %></td>
+            <td><%= entry.ended_at ? formatDateTimeDk(entry.ended_at) : "Kører" %></td>
+            <td>
+              <% if (entry.ended_at) { %>
+                <%= formatDuration(entry.duration_seconds) %>
+              <% } else { %>
+                <span class="badge badge-running">Kører</span>
+              <% } %>
+            </td>
+            <td><%= entry.note || "-" %></td>
+            <td class="right">
+              <form method="post" action="<%= basePath %>/time/entries/<%= entry.id %>/delete" class="table-action" onsubmit="return confirm('Slet tidsregistreringen?')">
+                <button type="submit" class="link-button danger-link">Slet</button>
+              </form>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  <% } %>
+</section>
+
+<%- include("partials/footer") %>

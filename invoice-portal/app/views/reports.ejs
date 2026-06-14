@@ -1,0 +1,109 @@
+<%- include("partials/header") %>
+
+<div class="page-header">
+  <div>
+    <h1>Rapporter</h1>
+    <p>Lav en regnskabsoversigt for en valgfri periode og download den som PDF.</p>
+  </div>
+  <a class="button" href="<%= basePath %>/reports/pdf?from=<%= from %>&to=<%= to %>" target="_blank">Download PDF</a>
+</div>
+
+<section class="card">
+  <form method="get" action="<%= basePath %>/reports" class="inline-form">
+    <label>
+      Fra
+      <input name="from" type="date" value="<%= from %>" required>
+    </label>
+    <label>
+      Til
+      <input name="to" type="date" value="<%= to %>" required>
+    </label>
+    <button type="submit">Vis periode</button>
+    <a class="button secondary-link" href="<%= basePath %>/reports/pdf?from=<%= from %>&to=<%= to %>" target="_blank">Åbn PDF</a>
+  </form>
+</section>
+
+<div class="stats stats-three">
+  <div class="stat-card">
+    <span>Omsætning</span>
+    <strong><%= money(totals.revenue) %></strong>
+  </div>
+  <div class="stat-card">
+    <span>Udgifter</span>
+    <strong><%= money(totals.expenses) %></strong>
+  </div>
+  <div class="stat-card">
+    <span>Resultat før skat</span>
+    <strong><%= money(totals.result) %></strong>
+  </div>
+</div>
+
+<section class="card">
+  <h2>Fakturaer i perioden</h2>
+  <% if (!invoices.length) { %>
+    <p>Ingen fakturaer i perioden.</p>
+  <% } else { %>
+    <table>
+      <thead>
+        <tr>
+          <th>Dato</th>
+          <th>Nr.</th>
+          <th>Kunde</th>
+          <th>Status</th>
+          <th class="right">Beløb</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% invoices.forEach(invoice => { %>
+          <tr>
+            <td><%= invoice.issue_date %></td>
+            <td><a href="<%= basePath %>/invoices/<%= invoice.id %>"><%= invoice.invoice_no %></a></td>
+            <td><%= invoice.customer_name %></td>
+            <td><span class="badge"><%= invoice.status %></span></td>
+            <td class="right"><%= money(invoice.total) %></td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  <% } %>
+</section>
+
+<section class="card">
+  <h2>Udgifter i perioden</h2>
+  <% if (!expenses.length) { %>
+    <p>Ingen udgifter i perioden.</p>
+  <% } else { %>
+    <table>
+      <thead>
+        <tr>
+          <th>Dato</th>
+          <th>Bilag</th>
+          <th>Beskrivelse</th>
+          <th>Kategori</th>
+          <th>Kvittering</th>
+          <th class="right">Beløb</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% expenses.forEach(expense => { %>
+          <tr>
+            <td><%= expense.expense_date %></td>
+            <td><%= expense.bilag_no %></td>
+            <td><%= expense.description %></td>
+            <td><span class="badge"><%= expense.category %></span></td>
+            <td>
+              <% if (expense.receipt_file) { %>
+                <a href="<%= basePath %>/expenses/<%= expense.id %>/receipt" target="_blank">Åbn bilag</a>
+              <% } else { %>
+                <span class="muted">Ingen</span>
+              <% } %>
+            </td>
+            <td class="right"><%= money(expense.amount) %></td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  <% } %>
+</section>
+
+<%- include("partials/footer") %>

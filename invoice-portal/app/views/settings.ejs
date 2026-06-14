@@ -1,0 +1,113 @@
+<%- include("partials/header") %>
+
+<div class="page-header">
+  <div>
+    <h1>Indstillinger</h1>
+    <p>Firmaoplysninger til faktura-PDF'er.</p>
+  </div>
+</div>
+
+<% if (saved) { %>
+  <div class="alert success">Indstillinger gemt.</div>
+<% } %>
+
+
+<section class="card settings-submenu">
+  <h2>Undermenuer</h2>
+  <p class="muted">Administrér relaterede indstillinger her.</p>
+  <div class="actions">
+    <a class="button secondary-link" href="<%= basePath %>/mail-accounts">Mailkonti</a>
+    <a class="button secondary-link" href="<%= basePath %>/documents">Dokumenter</a>
+  </div>
+</section>
+
+<section class="card">
+  <form method="post" action="<%= basePath %>/settings" enctype="multipart/form-data" class="form grid-form">
+    <label>Firmanavn <input name="company_name" value="<%= settings.company_name %>"></label>
+    <label>CVR <input name="cvr" value="<%= settings.cvr %>"></label>
+    <label>Dit navn <input name="owner_name" value="<%= settings.owner_name %>"></label>
+    <label>Email <input name="email" value="<%= settings.email %>"></label>
+
+    <div class="full settings-section-title">
+      <h2>Logo</h2>
+      <p class="muted">Logo vises på faktura-PDF og regnskabsrapport-PDF. Brug PNG eller JPG for mest stabil PDF-visning. WEBP kan vises i portalen, men ikke altid i PDF.</p>
+    </div>
+
+    <div class="full logo-settings-box">
+      <% if (settings.logo_file) { %>
+        <div class="logo-preview-wrap">
+          <img src="<%= basePath %>/settings/logo" class="logo-preview" alt="Firmalogo">
+          <div>
+            <strong>Nuværende logo</strong>
+            <p class="muted"><%= settings.logo_original_name || settings.logo_file %></p>
+            <label class="checkbox-label">
+              <input type="checkbox" name="remove_logo" value="1">
+              Fjern logo
+            </label>
+          </div>
+        </div>
+      <% } else { %>
+        <p class="muted">Der er ikke uploadet et logo endnu.</p>
+      <% } %>
+    </div>
+
+    <label class="full">Upload nyt logo <input name="logo" type="file" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"></label>
+
+    <label>Telefon <input name="phone" value="<%= settings.phone %>"></label>
+    <label>Adresse <input name="address" value="<%= settings.address %>"></label>
+    <label>Postnr. og by <input name="zip_city" value="<%= settings.zip_city %>"></label>
+    <label>Bank <input name="bank_name" value="<%= settings.bank_name %>"></label>
+    <label>Reg.nr. <input name="reg_no" value="<%= settings.reg_no %>" placeholder="Valgfrit"></label>
+    <label>Kontonr. <input name="account_no" value="<%= settings.account_no %>" placeholder="Valgfrit"></label>
+    <label>IBAN <input name="iban" value="<%= settings.iban || '' %>" placeholder="Fx DK12 3456 7890 1234 56"></label>
+    <label>BIC/SWIFT <input name="bic" value="<%= settings.bic || '' %>" placeholder="Fx DABADKKK"></label>
+    <label>MobilePay <input name="mobilepay" value="<%= settings.mobilepay %>"></label>
+    <label>Betalingsfrist i dage <input name="payment_days" type="number" min="0" value="<%= settings.payment_days %>"></label>
+    <label class="full">Fakturanote <textarea name="invoice_note" rows="3"><%= settings.invoice_note %></textarea></label>
+
+    <div class="full settings-section-title">
+      <h2>Email / SMTP</h2>
+      <p class="muted">Bruges til at sende faktura-PDF direkte fra portalen.</p>
+    </div>
+
+    <label>SMTP host <input name="smtp_host" value="<%= settings.smtp_host || '' %>" placeholder="Fx mail.privateemail.com"></label>
+    <label>SMTP port <input name="smtp_port" type="number" value="<%= settings.smtp_port || 587 %>" placeholder="587"></label>
+    <label>
+      Sikker forbindelse
+      <select name="smtp_secure">
+        <option value="0" <%= Number(settings.smtp_secure || 0) === 0 ? "selected" : "" %>>STARTTLS / port 587</option>
+        <option value="1" <%= Number(settings.smtp_secure || 0) === 1 ? "selected" : "" %>>SSL/TLS / port 465</option>
+      </select>
+    </label>
+    <label>SMTP brugernavn <input name="smtp_user" value="<%= settings.smtp_user || '' %>" autocomplete="off"></label>
+    <label>SMTP adgangskode <input name="smtp_pass" type="password" value="<%= settings.smtp_pass || '' %>" autocomplete="new-password"></label>
+    <label>Afsender <input name="smtp_from" value="<%= settings.smtp_from || '' %>" placeholder="Fx Dit Firma <faktura@domæne.dk>"></label>
+    <label class="full">Email emne <input name="invoice_email_subject" value="<%= settings.invoice_email_subject || '' %>"></label>
+    <label class="full">Email tekst <textarea name="invoice_email_body" rows="6"><%= settings.invoice_email_body || '' %></textarea></label>
+    <label class="full">Email-signatur <textarea name="email_signature" rows="5" placeholder="Fx Venlig hilsen&#10;Veltrix&#10;faktura@veltrix.dk"><%= settings.email_signature || '' %></textarea></label>
+
+    <div class="full settings-section-title">
+      <h2>IMAP / læs emails</h2>
+      <p class="muted">Bruges til Mail-menuen, hvor du kan læse indbakken direkte i portalen.</p>
+    </div>
+
+    <label>IMAP host <input name="imap_host" value="<%= settings.imap_host || '' %>" placeholder="Fx mail.veltrix.dk"></label>
+    <label>IMAP port <input name="imap_port" type="number" value="<%= settings.imap_port || 993 %>" placeholder="993"></label>
+    <label>
+      IMAP sikker forbindelse
+      <select name="imap_secure">
+        <option value="1" <%= Number(settings.imap_secure || 1) === 1 ? "selected" : "" %>>SSL/TLS / port 993</option>
+        <option value="0" <%= Number(settings.imap_secure || 1) === 0 ? "selected" : "" %>>STARTTLS/ikke-SSL / port 143</option>
+      </select>
+    </label>
+    <label>IMAP brugernavn <input name="imap_user" value="<%= settings.imap_user || '' %>" placeholder="faktura@veltrix.dk" autocomplete="off"></label>
+    <label>IMAP adgangskode <input name="imap_pass" type="password" value="<%= settings.imap_pass || '' %>" autocomplete="new-password"></label>
+    <label>IMAP mappe <input name="imap_mailbox" value="<%= settings.imap_mailbox || 'INBOX' %>" placeholder="INBOX"></label>
+
+    <div class="full">
+      <button type="submit">Gem indstillinger</button>
+    </div>
+  </form>
+</section>
+
+<%- include("partials/footer") %>

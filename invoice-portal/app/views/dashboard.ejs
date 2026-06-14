@@ -1,0 +1,66 @@
+<%- include("partials/header") %>
+
+<div class="page-header">
+  <div>
+    <h1>Dashboard</h1>
+    <p>Overblik over fakturaer, udgifter og estimeret resultat.</p>
+  </div>
+  <div class="actions">
+    <a class="button" href="<%= basePath %>/invoices/new">Opret faktura</a>
+    <a class="button secondary-link" href="<%= basePath %>/documents">Dokumenter</a>
+  </div>
+</div>
+
+<div class="stats stats-four">
+  <div class="stat-card">
+    <span>Fakturaer i år</span>
+    <strong><%= stats.invoice_count || 0 %></strong>
+  </div>
+  <div class="stat-card">
+    <span>Omsætning i år</span>
+    <strong><%= money(stats.revenue || 0) %></strong>
+  </div>
+  <div class="stat-card">
+    <span>Udgifter i år</span>
+    <strong><%= money(stats.expenses || 0) %></strong>
+  </div>
+  <div class="stat-card">
+    <span>Estimeret resultat</span>
+    <strong><%= money(stats.result || 0) %></strong>
+  </div>
+</div>
+
+<section class="card">
+  <h2>Seneste fakturaer</h2>
+
+  <% if (!invoices.length) { %>
+    <p>Ingen fakturaer endnu.</p>
+  <% } else { %>
+    <table>
+      <thead>
+        <tr>
+          <th>Nr.</th>
+          <th>Kunde</th>
+          <th>Dato</th>
+          <th>Status</th>
+          <th class="right">Beløb</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% invoices.forEach(invoice => { %>
+          <tr>
+            <td><%= invoice.invoice_no %></td>
+            <td><%= invoice.customer_name %></td>
+            <td><%= invoice.issue_date %></td>
+            <td><span class="badge"><%= invoice.status %></span></td>
+            <td class="right"><%= money(invoice.total) %></td>
+            <td class="right"><a href="<%= basePath %>/invoices/<%= invoice.id %>">Åbn</a></td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  <% } %>
+</section>
+
+<%- include("partials/footer") %>

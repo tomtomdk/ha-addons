@@ -1,0 +1,90 @@
+<%- include("partials/header") %>
+
+<div class="page-header">
+  <div>
+    <h1>Mail</h1>
+    <p>Læs indbakken direkte fra portalen via IMAP.</p>
+  </div>
+  <div class="actions">
+    <a class="button" href="<%= basePath %>/mail/compose/new?account=<%= selectedAccountId %>">Skriv ny mail</a>
+    <a class="button secondary-link" href="<%= basePath %>/mail-accounts">Administrér mailkonti</a>
+  </div>
+</div>
+
+<% if (!configured) { %>
+  <div class="alert error">
+    IMAP er ikke sat op for den valgte konto, eller der er ikke valgt en mailkonto med IMAP. Gå til <a href="<%= basePath %>/mail-accounts">Mailkonti</a> eller <a href="<%= basePath %>/settings">Indstillinger</a>.
+  </div>
+<% } %>
+
+<% if (error) { %>
+  <div class="alert error"><%= error %></div>
+<% } %>
+
+<section class="card">
+  <form method="get" action="<%= basePath %>/mail" class="inline-form">
+    <label>
+      Konto
+      <select name="account">
+        <% accounts.forEach(account => { %>
+          <option value="<%= account.id %>" <%= String(selectedAccountId) === String(account.id) ? "selected" : "" %>><%= account.name %> · <%= account.email || account.imap_user || account.smtp_user %></option>
+        <% }) %>
+      </select>
+    </label>
+    <label>
+      Antal mails
+      <select name="limit">
+        <option value="10" <%= Number(limit) === 10 ? "selected" : "" %>>10</option>
+        <option value="25" <%= Number(limit) === 25 ? "selected" : "" %>>25</option>
+        <option value="50" <%= Number(limit) === 50 ? "selected" : "" %>>50</option>
+        <option value="100" <%= Number(limit) === 100 ? "selected" : "" %>>100</option>
+      </select>
+    </label>
+    <button type="submit">Opdater</button>
+  </form>
+</section>
+
+<section class="card">
+  <h2>Indbakke</h2>
+
+  <% if (!accounts.length) { %>
+    <p>Ingen mailkonti endnu. <a href="<%= basePath %>/mail-accounts">Opret en mailkonto</a>.</p>
+  <% } else if (!messages.length) { %>
+    <p>Ingen emails at vise.</p>
+  <% } else { %>
+    <table>
+      <thead>
+        <tr>
+          <th>Dato</th>
+          <th>Fra</th>
+          <th>Emne</th>
+          <th>Størrelse</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+                <% messages.forEach(message => { %>
+          <% const isUnread = !message.seen; %>
+          <% const mailDate = formatMailDateParts(message.date); %>
+          <tr class="<%= isUnread ? "mail-row-unread" : "mail-row-read" %>">
+            <td class="mail-date <%= isUnread ? "mail-date-unread" : "" %>">
+              <span class="mail-date-day"><%= mailDate.date %></span>
+              <span class="mail-date-time"><%= mailDate.time %></span>
+            </td>
+            <td class="mail-from"><%= message.from %></td>
+            <td class="mail-subject-cell">
+              <div class="mail-subject-content">
+                <span class="badge mail-state-badge <%= isUnread ? "unread-badge" : "read-badge" %>"><%= isUnread ? "Ulæst" : "Læst" %></span>
+                <span class="mail-subject"><%= message.subject %></span>
+              </div>
+            </td>
+            <td class="mail-size"><%= Math.round((message.size || 0) / 1024) %> KB</td>
+            <td class="right"><a href="<%= basePath %>/mail/<%= message.uid %>?account=<%= selectedAccountId %>"><%= isUnread ? "Læs ny" : "Åbn" %></a></td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  <% } %>
+</section>
+
+<%- include("partials/footer") %>

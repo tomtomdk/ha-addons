@@ -1,0 +1,103 @@
+<%- include("partials/header") %>
+
+<div class="page-header">
+  <div>
+    <h1>Mailkonti</h1>
+    <p>Undermenu under Indstillinger. Tilføj emailadresser, der kan bruges til at læse, skrive og svare på mails.</p>
+  </div>
+  <div class="actions">
+    <a class="button" href="<%= basePath %>/mail">Gå til Mail</a>
+    <a class="button secondary-link" href="<%= basePath %>/settings">Tilbage til Indstillinger</a>
+  </div>
+</div>
+
+<% if (saved) { %>
+  <div class="alert success">Mailkonto gemt.</div>
+<% } %>
+
+<section class="card">
+  <h2>Tilføj mailkonto</h2>
+  <form method="post" action="<%= basePath %>/mail-accounts" class="form grid-form">
+    <label>Navn <input name="name" required placeholder="Fx Faktura / Support"></label>
+    <label>Emailadresse <input name="email" type="email" required placeholder="faktura@veltrix.dk"></label>
+    <label>Visningsnavn <input name="display_name" placeholder="Fx Veltrix"></label>
+
+    <div class="full settings-section-title">
+      <h2>SMTP / send mails</h2>
+    </div>
+
+    <label>SMTP host <input name="smtp_host" placeholder="Fx mail.veltrix.dk"></label>
+    <label>SMTP port <input name="smtp_port" type="number" value="465"></label>
+    <label>
+      SMTP sikker forbindelse
+      <select name="smtp_secure">
+        <option value="1">SSL/TLS / port 465</option>
+        <option value="0">STARTTLS / port 587</option>
+      </select>
+    </label>
+    <label>SMTP brugernavn <input name="smtp_user" placeholder="faktura@veltrix.dk" autocomplete="off"></label>
+    <label>SMTP adgangskode <input name="smtp_pass" type="password" autocomplete="new-password"></label>
+
+    <div class="full settings-section-title">
+      <h2>IMAP / læs mails</h2>
+    </div>
+
+    <label>IMAP host <input name="imap_host" placeholder="Fx mail.veltrix.dk"></label>
+    <label>IMAP port <input name="imap_port" type="number" value="993"></label>
+    <label>
+      IMAP sikker forbindelse
+      <select name="imap_secure">
+        <option value="1">SSL/TLS / port 993</option>
+        <option value="0">STARTTLS/ikke-SSL / port 143</option>
+      </select>
+    </label>
+    <label>IMAP brugernavn <input name="imap_user" placeholder="faktura@veltrix.dk" autocomplete="off"></label>
+    <label>IMAP adgangskode <input name="imap_pass" type="password" autocomplete="new-password"></label>
+    <label>IMAP mappe <input name="imap_mailbox" value="INBOX"></label>
+
+    <div class="full">
+      <button type="submit">Gem mailkonto</button>
+    </div>
+  </form>
+</section>
+
+<section class="card">
+  <h2>Ekstra mailkonti</h2>
+  <% if (!accounts.length) { %>
+    <p>Ingen ekstra mailkonti endnu. Standardkontoen fra Indstillinger kan stadig bruges.</p>
+  <% } else { %>
+    <table>
+      <thead>
+        <tr>
+          <th>Status</th>
+          <th>Navn</th>
+          <th>Email</th>
+          <th>SMTP</th>
+          <th>IMAP</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% accounts.forEach(account => { %>
+          <tr>
+            <td><span class="badge"><%= account.active ? "Aktiv" : "Pause" %></span></td>
+            <td><%= account.name %></td>
+            <td><%= account.email %></td>
+            <td><%= account.smtp_host ? account.smtp_host + ":" + account.smtp_port : "Ikke sat" %></td>
+            <td><%= account.imap_host ? account.imap_host + ":" + account.imap_port : "Ikke sat" %></td>
+            <td class="right">
+              <form method="post" action="<%= basePath %>/mail-accounts/<%= account.id %>/toggle" class="table-action">
+                <button class="link-button" type="submit"><%= account.active ? "Pause" : "Aktivér" %></button>
+              </form>
+              <form method="post" action="<%= basePath %>/mail-accounts/<%= account.id %>/delete" class="table-action" onsubmit="return confirm('Slet mailkontoen?')">
+                <button class="link-button danger-link" type="submit">Slet</button>
+              </form>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  <% } %>
+</section>
+
+<%- include("partials/footer") %>

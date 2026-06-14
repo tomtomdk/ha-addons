@@ -1,0 +1,37 @@
+#!/usr/bin/with-contenv bashio
+set -e
+
+mkdir -p /data/uploads/receipts /data/uploads/documents /data/uploads/company
+
+ADMIN_USERNAME="$(bashio::config 'admin_username')"
+ADMIN_PASSWORD="$(bashio::config 'admin_password')"
+SESSION_SECRET="$(bashio::config 'session_secret')"
+TRUST_PROXY="$(bashio::config 'trust_proxy')"
+CVR_LOOKUP_ENABLED="$(bashio::config 'cvr_lookup_enabled')"
+CVR_USER_AGENT="$(bashio::config 'cvr_user_agent')"
+APP_LANGUAGE="$(bashio::config 'app_language')"
+
+if [[ -z "${SESSION_SECRET}" ]]; then
+  if [[ ! -f /data/.session_secret ]]; then
+    tr -dc 'A-Za-z0-9_-' < /dev/urandom | head -c 64 > /data/.session_secret
+  fi
+  SESSION_SECRET="$(cat /data/.session_secret)"
+fi
+
+if [[ "${ADMIN_PASSWORD}" == "change-me-now" ]]; then
+  bashio::log.warning "Admin password is still the default. Change it in the add-on Configuration tab."
+fi
+
+export ADMIN_USERNAME
+export ADMIN_PASSWORD
+export SESSION_SECRET
+export TRUST_PROXY
+export CVR_LOOKUP_ENABLED
+export CVR_USER_AGENT
+export APP_LANGUAGE
+export NODE_ENV=production
+export PORT=3000
+export DATA_DIR=/data
+
+cd /app
+exec npm start

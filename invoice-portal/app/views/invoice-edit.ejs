@@ -1,0 +1,91 @@
+<%- include("partials/header") %>
+
+<div class="page-header">
+  <div>
+    <h1>Rediger faktura <%= invoice.invoice_no %></h1>
+    <p>Ret kunde, dato, status, noter og fakturalinjer.</p>
+  </div>
+  <div class="actions">
+    <a class="button secondary-link" href="<%= basePath %>/invoices/<%= invoice.id %>">Tilbage til faktura</a>
+  </div>
+</div>
+
+<section class="card">
+  <form method="post" action="<%= basePath %>/invoices/<%= invoice.id %>/update" class="form">
+    <div class="grid-form">
+      <label>
+        Kunde
+        <select name="customer_id" required>
+          <% customers.forEach(customer => { %>
+            <option value="<%= customer.id %>" <%= Number(invoice.customer_id) === Number(customer.id) ? "selected" : "" %>><%= customer.name %></option>
+          <% }) %>
+        </select>
+      </label>
+      <label>Fakturadato <input name="issue_date" type="date" value="<%= invoice.issue_date %>" required></label>
+      <label>Forfaldsdato <input name="due_date" type="date" value="<%= invoice.due_date %>" required></label>
+      <label>
+        Status
+        <select name="status">
+          <option value="draft" <%= invoice.status === "draft" ? "selected" : "" %>>Kladde</option>
+          <option value="sent" <%= invoice.status === "sent" ? "selected" : "" %>>Sendt</option>
+          <option value="paid" <%= invoice.status === "paid" ? "selected" : "" %>>Betalt</option>
+        </select>
+      </label>
+    </div>
+
+    <h2>Linjer</h2>
+    <div id="items" class="items">
+      <% items.forEach(item => { %>
+        <div class="item-row editable-item-row">
+          <textarea name="description" rows="2" placeholder="Beskrivelse" required><%= item.description %></textarea>
+          <input name="quantity" type="number" step="0.01" value="<%= item.quantity %>" required>
+          <input name="unit_price" type="number" step="0.01" value="<%= item.unit_price %>" required>
+          <button type="button" class="secondary remove-line-button" onclick="removeItem(this)">Fjern</button>
+        </div>
+      <% }) %>
+    </div>
+
+    <button type="button" class="secondary" onclick="addItem()">Tilføj linje</button>
+
+    <label>
+      Note på faktura
+      <textarea name="notes" rows="3"><%= invoice.notes || "" %></textarea>
+    </label>
+
+    <div class="actions">
+      <button type="submit">Gem ændringer</button>
+      <a class="button secondary-link" href="<%= basePath %>/invoices/<%= invoice.id %>">Annuller</a>
+    </div>
+  </form>
+</section>
+
+<script>
+function addItem(description = "", quantity = "1", unitPrice = "0") {
+  const div = document.createElement("div");
+  div.className = "item-row editable-item-row";
+  div.innerHTML = `
+    <textarea name="description" rows="2" placeholder="Beskrivelse" required></textarea>
+    <input name="quantity" type="number" step="0.01" value="${quantity}" required>
+    <input name="unit_price" type="number" step="0.01" value="${unitPrice}" required>
+    <button type="button" class="secondary remove-line-button" onclick="removeItem(this)">Fjern</button>
+  `;
+  div.querySelector("textarea").value = description;
+  document.getElementById("items").appendChild(div);
+}
+
+function removeItem(button) {
+  const rows = document.querySelectorAll(".item-row");
+  if (rows.length <= 1) {
+    alert("Fakturaen skal have mindst én linje.");
+    return;
+  }
+
+  button.closest(".item-row").remove();
+}
+
+if (!document.querySelectorAll(".item-row").length) {
+  addItem();
+}
+</script>
+
+<%- include("partials/footer") %>

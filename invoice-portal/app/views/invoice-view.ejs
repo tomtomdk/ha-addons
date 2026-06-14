@@ -1,0 +1,124 @@
+<%- include("partials/header") %>
+
+<div class="page-header">
+  <div>
+    <h1>Faktura <%= invoice.invoice_no %></h1>
+    <p><%= customer.name %> · <%= invoice.issue_date %></p>
+  </div>
+  <div class="actions">
+    <a class="button" href="<%= basePath %>/invoices/<%= invoice.id %>/pdf" target="_blank">Åbn PDF</a>
+    <a class="button secondary-link" href="<%= basePath %>/invoices/<%= invoice.id %>/email">Send email</a>
+    <a class="button secondary-link" href="<%= basePath %>/invoices/<%= invoice.id %>/edit">Rediger</a>
+  </div>
+</div>
+
+<% if (typeof saved !== "undefined" && saved) { %>
+  <div class="alert success">Fakturaen blev gemt.</div>
+<% } %>
+<% if (typeof fromTime !== "undefined" && fromTime) { %>
+  <div class="alert success">Fakturaen blev oprettet fra tidsopgaven.</div>
+<% } %>
+
+<section class="invoice-preview card">
+  <div class="invoice-top">
+    <div>
+      <h2>Fra</h2>
+      <p>
+        <strong><%= settings.company_name %></strong><br>
+        <% if (settings.cvr) { %>CVR: <%= settings.cvr %><br><% } %>
+        <%= settings.owner_name %><br>
+        <%= settings.address %><br>
+        <%= settings.zip_city %><br>
+        <%= settings.email %>
+      </p>
+    </div>
+    <div>
+      <h2>Til</h2>
+      <p>
+        <strong><%= customer.name %></strong><br>
+        <% if (customer.cvr) { %>CVR: <%= customer.cvr %><br><% } %>
+        <%= customer.address %><br>
+        <%= customer.zip_city %><br>
+        <%= customer.email %>
+      </p>
+    </div>
+    <div>
+      <h2>Info</h2>
+      <p>
+        Fakturanr.: <%= invoice.invoice_no %><br>
+        Dato: <%= invoice.issue_date %><br>
+        Forfald: <%= invoice.due_date %><br>
+        Status: <span class="badge"><%= invoice.status %></span>
+      </p>
+    </div>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Beskrivelse</th>
+        <th class="right">Antal</th>
+        <th class="right">Pris</th>
+        <th class="right">Beløb</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% items.forEach(item => { %>
+        <tr>
+          <td><%= item.description %></td>
+          <td class="right"><%= item.quantity %></td>
+          <td class="right"><%= money(item.unit_price) %></td>
+          <td class="right"><%= money(item.quantity * item.unit_price) %></td>
+        </tr>
+      <% }) %>
+    </tbody>
+    <tfoot>
+      <tr>
+        <td colspan="3" class="right">Moms</td>
+        <td class="right"><%= money(0) %></td>
+      </tr>
+      <tr>
+        <td colspan="3" class="right"><strong>Total</strong></td>
+        <td class="right"><strong><%= money(total) %></strong></td>
+      </tr>
+    </tfoot>
+  </table>
+
+  <div class="payment-box">
+    <h3>Betaling</h3>
+    <% if (settings.bank_name) { %><p>Bank: <%= settings.bank_name %></p><% } %>
+    <% if (settings.reg_no || settings.account_no) { %><p>Reg.nr.: <%= settings.reg_no %> · Kontonr.: <%= settings.account_no %></p><% } %>
+    <% if (settings.iban) { %><p>IBAN: <%= settings.iban %></p><% } %>
+    <% if (settings.bic) { %><p>BIC/SWIFT: <%= settings.bic %></p><% } %>
+    <% if (settings.mobilepay) { %><p>MobilePay: <%= settings.mobilepay %></p><% } %>
+  </div>
+
+  <p class="note"><%= settings.invoice_note %></p>
+  <% if (invoice.notes) { %>
+    <p class="note"><%= invoice.notes %></p>
+  <% } %>
+</section>
+
+<section class="card">
+  <form method="post" action="<%= basePath %>/invoices/<%= invoice.id %>/status" class="inline-form">
+    <label>
+      Status
+      <select name="status">
+        <option value="draft" <%= invoice.status === "draft" ? "selected" : "" %>>Kladde</option>
+        <option value="sent" <%= invoice.status === "sent" ? "selected" : "" %>>Sendt</option>
+        <option value="paid" <%= invoice.status === "paid" ? "selected" : "" %>>Betalt</option>
+      </select>
+    </label>
+    <button type="submit">Gem status</button>
+  </form>
+
+  <form method="post" action="<%= basePath %>/invoices/<%= invoice.id %>/duplicate">
+    <button type="submit" class="secondary-button">Duplikér som kladde</button>
+  </form>
+
+  <form method="post" action="<%= basePath %>/invoices/<%= invoice.id %>/delete" onsubmit="return confirm('Slet fakturaen permanent?')">
+    <button class="danger" type="submit">Slet faktura</button>
+  </form>
+</section>
+
+<%- include("partials/footer") %>

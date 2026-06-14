@@ -1,0 +1,91 @@
+<%- include("partials/header") %>
+
+<section class="card settings-submenu"><div class="actions"><a class="button secondary-link" href="<%= basePath %>/recurring-expenses">Faste udgifter</a></div></section>
+
+<div class="page-header">
+  <div>
+    <h1>Udgifter</h1>
+    <p>Registrér bankgebyrer, materialer, værktøj, software og andre fradragsberettigede udgifter.</p>
+  </div>
+</div>
+
+<section class="card">
+  <h2>Ny udgift</h2>
+  <form method="post" action="<%= basePath %>/expenses" class="form grid-form" enctype="multipart/form-data">
+    <label>Dato <input name="expense_date" type="date" required></label>
+    <label>Bilag nr. <input name="bilag_no" placeholder="Fx 2026-014"></label>
+    <label>Beskrivelse <input name="description" required placeholder="Fx månedligt bankgebyr"></label>
+    <label>Leverandør <input name="supplier" placeholder="Fx banknavn"></label>
+    <label>
+      Kategori
+      <select name="category">
+        <option>Bankgebyrer</option>
+        <option>Materialer</option>
+        <option>Værktøj</option>
+        <option>Software</option>
+        <option>Transport</option>
+        <option>Telefon/internet</option>
+        <option>Diverse</option>
+      </select>
+    </label>
+    <label>Beløb <input name="amount" type="number" step="0.01" required></label>
+    <label>
+      Kvittering / bilag
+      <input name="receipt" type="file" accept=".pdf,.jpg,.jpeg,.png,.webp,application/pdf,image/jpeg,image/png,image/webp">
+    </label>
+    <label class="full">Note <textarea name="notes" rows="2"></textarea></label>
+    <div class="full">
+      <button type="submit">Gem udgift</button>
+    </div>
+  </form>
+</section>
+
+<section class="card">
+  <h2>Alle udgifter</h2>
+  <p class="muted">Total i denne visning: <strong><%= money(total) %></strong></p>
+
+  <% if (!expenses.length) { %>
+    <p>Ingen udgifter endnu.</p>
+  <% } else { %>
+    <table>
+      <thead>
+        <tr>
+          <th>Dato</th>
+          <th>Bilag</th>
+          <th>Beskrivelse</th>
+          <th>Leverandør</th>
+          <th>Kategori</th>
+          <th>Kvittering</th>
+          <th class="right">Beløb</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% expenses.forEach(expense => { %>
+          <tr>
+            <td><%= expense.expense_date %></td>
+            <td><%= expense.bilag_no %></td>
+            <td><%= expense.description %></td>
+            <td><%= expense.supplier %></td>
+            <td><span class="badge"><%= expense.category %></span></td>
+            <td>
+              <% if (expense.receipt_file) { %>
+                <a href="<%= basePath %>/expenses/<%= expense.id %>/receipt" target="_blank"><%= expense.receipt_original_name || "Åbn bilag" %></a>
+              <% } else { %>
+                <span class="muted">Ingen</span>
+              <% } %>
+            </td>
+            <td class="right"><%= money(expense.amount) %></td>
+            <td class="right">
+              <form method="post" action="<%= basePath %>/expenses/<%= expense.id %>/delete" onsubmit="return confirm('Slet udgiften?')">
+                <button class="link-button danger-link" type="submit">Slet</button>
+              </form>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  <% } %>
+</section>
+
+<%- include("partials/footer") %>

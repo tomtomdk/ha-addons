@@ -1,0 +1,189 @@
+<%- include("partials/header") %>
+
+<div class="page-header">
+  <div>
+    <h1>Dokumenter</h1>
+    <p>Upload og gem firma-relaterede dokumenter samlet ét sted.</p>
+  </div>
+</div>
+
+<% if (saved) { %>
+  <div class="alert success">Dokument gemt.</div>
+<% } %>
+
+<section class="card">
+  <h2>Upload dokument</h2>
+  <form method="post" action="<%= basePath %>/documents" enctype="multipart/form-data" class="form grid-form">
+    <label>Titel <input name="title" required placeholder="Fx Bankaftale, CVR-bekræftelse, kontrakt"></label>
+    <label>
+      Kategori
+      <select name="category">
+        <option>Kontrakt</option>
+        <option>Bank</option>
+        <option>CVR / virksomhed</option>
+        <option>Forsikring</option>
+        <option>Tilbud</option>
+        <option>Aftale</option>
+        <option>Skat</option>
+        <option>Diverse</option>
+      </select>
+    </label>
+    <label>Dato <input name="document_date" type="date"></label>
+    <label>Fil <input name="document" type="file" required accept=".pdf,.jpg,.jpeg,.png,.webp,.txt,.csv,.doc,.docx,.xls,.xlsx"></label>
+    <label class="full">Note <textarea name="notes" rows="3" placeholder="Valgfri note om dokumentet"></textarea></label>
+    <div class="full">
+      <button type="submit">Upload dokument</button>
+    </div>
+  </form>
+</section>
+
+<section class="card">
+  <h2>Gemte dokumenter</h2>
+
+  <% if (!documents.length) { %>
+    <p>Ingen dokumenter endnu.</p>
+  <% } else { %>
+    <table>
+      <thead>
+        <tr>
+          <th>Dato</th>
+          <th>Titel</th>
+          <th>Kategori</th>
+          <th>Fil</th>
+          <th>Størrelse</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% documents.forEach(document => { %>
+          <tr>
+            <td><%= document.document_date || "-" %></td>
+            <td>
+              <strong><%= document.title %></strong>
+              <% if (document.notes) { %>
+                <div class="muted table-note"><%= document.notes %></div>
+              <% } %>
+            </td>
+            <td><span class="badge"><%= document.category %></span></td>
+            <td><%= document.original_name %></td>
+            <td><%= Math.round((document.size_bytes || 0) / 1024) %> KB</td>
+            <td class="right">
+              <button
+                type="button"
+                class="link-button document-preview-button"
+                data-document-url="/documents/<%= document.id %>/file"
+                data-document-title="<%= document.title %>"
+                data-document-name="<%= document.original_name %>"
+                data-document-mime="<%= document.mime_type %>"
+              >Åbn</button>
+              <form method="post" action="<%= basePath %>/documents/<%= document.id %>/delete" class="table-action" onsubmit="return confirm('Slet dokumentet permanent?')">
+                <button class="link-button danger-link" type="submit">Slet</button>
+              </form>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  <% } %>
+</section>
+
+
+<div id="documentPreviewModal" class="modal-backdrop" hidden>
+  <div class="document-modal" role="dialog" aria-modal="true" aria-labelledby="documentPreviewTitle">
+    <div class="document-modal-header">
+      <div>
+        <h2 id="documentPreviewTitle">Dokument</h2>
+        <p id="documentPreviewMeta" class="muted"></p>
+      </div>
+      <div class="actions">
+        <a id="documentPreviewOpenNew" class="button secondary-link" href="#" target="_blank" rel="noopener">Åbn i ny fane</a>
+        <button type="button" class="secondary-button" id="documentPreviewClose">Luk</button>
+      </div>
+    </div>
+    <div class="document-modal-body">
+      <img id="documentPreviewImage" class="document-preview-image" alt="" hidden>
+      <iframe id="documentPreviewFrame" class="document-preview-frame" title="Dokumentvisning" hidden></iframe>
+      <div id="documentPreviewFallback" class="document-preview-fallback" hidden>
+        <p>Denne filtype kan muligvis ikke vises direkte i browseren.</p>
+        <a id="documentPreviewFallbackLink" class="button" href="#" target="_blank" rel="noopener">Åbn dokument</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(() => {
+  const modal = document.getElementById("documentPreviewModal");
+  const closeButton = document.getElementById("documentPreviewClose");
+  const title = document.getElementById("documentPreviewTitle");
+  const meta = document.getElementById("documentPreviewMeta");
+  const openNew = document.getElementById("documentPreviewOpenNew");
+  const image = document.getElementById("documentPreviewImage");
+  const frame = document.getElementById("documentPreviewFrame");
+  const fallback = document.getElementById("documentPreviewFallback");
+  const fallbackLink = document.getElementById("documentPreviewFallbackLink");
+
+  function closeModal() {
+    modal.hidden = true;
+    image.hidden = true;
+    frame.hidden = true;
+    fallback.hidden = true;
+    image.removeAttribute("src");
+    frame.removeAttribute("src");
+  }
+
+  function openModal(button) {
+    const url = button.dataset.documentUrl;
+    const docTitle = button.dataset.documentTitle || "Dokument";
+    const docName = button.dataset.documentName || "";
+    const mime = button.dataset.documentMime || "";
+
+    title.textContent = docTitle;
+    meta.textContent = docName;
+    openNew.href = url;
+    fallbackLink.href = url;
+
+    image.hidden = true;
+    frame.hidden = true;
+    fallback.hidden = true;
+    image.removeAttribute("src");
+    frame.removeAttribute("src");
+
+    if (mime.startsWith("image/")) {
+      image.src = url;
+      image.alt = docTitle;
+      image.hidden = false;
+    } else if (
+      mime === "application/pdf" ||
+      mime.startsWith("text/") ||
+      mime === "text/csv"
+    ) {
+      frame.src = url;
+      frame.hidden = false;
+    } else {
+      frame.src = url;
+      frame.hidden = false;
+      fallback.hidden = false;
+    }
+
+    modal.hidden = false;
+  }
+
+  document.querySelectorAll(".document-preview-button").forEach((button) => {
+    button.addEventListener("click", () => openModal(button));
+  });
+
+  closeButton.addEventListener("click", closeModal);
+
+  modal.addEventListener("click", (event) => {
+    if (event.target === modal) closeModal();
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && !modal.hidden) closeModal();
+  });
+})();
+</script>
+
+
+<%- include("partials/footer") %>

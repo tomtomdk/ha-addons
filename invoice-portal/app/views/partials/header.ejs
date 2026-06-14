@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="<%= language || 'da' %>">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title><%= t('appName') %></title>
+  <link rel="stylesheet" href="<%= basePath %>/style.css">
+</head>
+<body data-language="<%= language || 'da' %>">
+  <header class="topbar">
+    <a class="brand" href="<%= basePath %>/"><%= t('appName') %></a>
+    <% if (user) { %>
+      <nav class="main-nav" aria-label="<%= language === 'en' ? 'Main menu' : 'Hovedmenu' %>">
+        <a href="<%= basePath %>/" class="<%= currentPath === '/' ? 'active' : '' %>"><%= t('dashboard') %></a>
+
+        <div class="nav-group">
+          <a href="<%= basePath %>/invoices/new" class="nav-group-trigger <%= currentPath.startsWith('/invoices') ? 'active' : '' %>"><%= t('invoices') %></a>
+          <div class="nav-dropdown">
+            <a href="<%= basePath %>/invoices/new"><%= t('newInvoice') %></a>
+          </div>
+        </div>
+
+        <a href="<%= basePath %>/customers" class="<%= currentPath.startsWith('/customers') ? 'active' : '' %>"><%= t('customers') %></a>
+        <a href="<%= basePath %>/time" class="<%= currentPath.startsWith('/time') ? 'active' : '' %>"><%= t('time') %></a>
+
+        <div class="nav-group">
+          <a href="<%= basePath %>/expenses" class="nav-group-trigger <%= (currentPath.startsWith('/expenses') || currentPath.startsWith('/recurring-expenses') || currentPath.startsWith('/reports')) ? 'active' : '' %>"><%= t('finance') %></a>
+          <div class="nav-dropdown">
+            <a href="<%= basePath %>/expenses"><%= t('expenses') %></a>
+            <a href="<%= basePath %>/recurring-expenses"><%= t('recurringExpenses') %></a>
+            <a href="<%= basePath %>/reports"><%= t('reports') %></a>
+          </div>
+        </div>
+
+        <div class="nav-group">
+          <a href="<%= basePath %>/documents" class="nav-group-trigger <%= currentPath.startsWith('/documents') ? 'active' : '' %>"><%= t('archive') %></a>
+          <div class="nav-dropdown">
+            <a href="<%= basePath %>/documents"><%= t('documents') %></a>
+          </div>
+        </div>
+
+        <a href="<%= basePath %>/mail" class="mail-nav-link <%= currentPath.startsWith('/mail') ? 'active' : '' %>">
+          Mail
+          <span id="mailUnreadBadge" class="mail-unread-badge" hidden>0</span>
+        </a>
+
+        <a href="<%= basePath %>/settings" class="<%= currentPath === '/settings' ? 'active' : '' %>"><%= t('settings') %></a>
+
+        <form class="language-form" action="<%= basePath %>/language" method="post">
+          <input type="hidden" name="return_to" value="<%= currentPath %>">
+          <label class="sr-only" for="languageSelect"><%= t('language') %></label>
+          <select id="languageSelect" name="language" onchange="this.form.submit()" title="<%= t('language') %>">
+            <option value="da" <%= language === 'da' ? 'selected' : '' %>>DA</option>
+            <option value="en" <%= language === 'en' ? 'selected' : '' %>>EN</option>
+          </select>
+        </form>
+
+        <form action="<%= basePath %>/logout" method="post">
+          <button class="link-button nav-logout-button" type="submit"><%= t('logout') %></button>
+        </form>
+      </nav>
+    <% } %>
+  </header>
+
+  <script>
+  window.INVOICE_PORTAL_LANGUAGE = "<%= language || 'da' %>";
+  window.INVOICE_PORTAL_BASE_PATH = "<%= basePath %>";
+  </script>
+  <script defer src="<%= basePath %>/i18n.js"></script>
+  <script>
+  (() => {
+    const badge = document.getElementById("mailUnreadBadge");
+    if (!badge) return;
+
+    const updateBadge = () => {
+      const controller = new AbortController();
+      const timeout = window.setTimeout(() => controller.abort(), 1800);
+      const basePath = window.INVOICE_PORTAL_BASE_PATH || "";
+
+      fetch(`${basePath}/api/mail/unread-count`, {
+        credentials: "same-origin",
+        cache: "no-store",
+        signal: controller.signal,
+        headers: { "Accept": "application/json" }
+      })
+        .then((res) => res.ok ? res.json() : { unread: 0 })
+        .then((data) => {
+          const unread = Number(data.unread || 0);
+          if (unread > 0) {
+            badge.textContent = unread > 99 ? "99+" : String(unread);
+            badge.hidden = false;
+          } else {
+            badge.hidden = true;
+          }
+        })
+        .catch(() => {
+          badge.hidden = true;
+        })
+        .finally(() => {
+          window.clearTimeout(timeout);
+        });
+    };
+
+    window.setTimeout(updateBadge, 700);
+  })();
+  </script>
+
+  <main class="container">
