@@ -1,15 +1,17 @@
 # Git Repository Mirror
 
-Mirror Git repositories from GitHub or other Git hosts to GitLab from inside Home Assistant.
+Mirror Git repositories between GitHub, GitLab, Gitea, Forgejo, and other Git hosts from inside Home Assistant.
 
-This add-on is useful when you want your Home Assistant server to keep backup mirrors of your GitHub repositories in a self-hosted GitLab instance.
+This add-on is useful when you want your Home Assistant server to keep backup mirrors of repositories in a self-hosted GitLab, Gitea, or Forgejo instance.
 
 ## Features
 
 - Mirror multiple repositories from one add-on
 - Configure repositories from the Home Assistant add-on UI
-- Supports public and private GitHub repositories
-- Supports GitLab personal, project, or deploy-style tokens
+- Supports public and private Git repositories over HTTPS
+- Provider-aware HTTP token injection for GitHub, GitLab, Gitea, and Forgejo
+- Global provider defaults with per-repository overrides
+- Per-repository mirror mode overrides
 - Persistent bare repository cache under `/data/repos`
 - Safe default mode that does not force-push
 - Optional Home Assistant persistent notifications
@@ -32,7 +34,7 @@ Available modes:
 |---|---|
 | `heads-tags` | Safest. Pushes branches and tags. Does not delete remote refs. |
 | `heads-tags-prune` | Pushes branches and tags and prunes deleted upstream refs. |
-| `mirror` | Full mirror push. Requires force-push permission on protected GitLab branches. |
+| `mirror` | Full mirror push. Requires force-push permission on protected branches. |
 
 For most users, use `heads-tags`.
 
@@ -42,6 +44,8 @@ For most users, use `heads-tags`.
 sync_interval: 3600
 run_on_start: true
 mirror_mode: heads-tags
+source_provider: github
+target_provider: gitlab
 github_username: tomtomdk
 github_token: ""
 gitlab_username: oauth2
@@ -57,6 +61,49 @@ repos:
     enabled: true
 ```
 > `enabled` is optional and defaults to `true`. Use the YAML editor if the form view gives validation issues with repo lists.
+
+## Provider targets
+
+Set `target_provider` to `gitlab`, `gitea`, `forgejo`, `github`, or `custom`.
+
+GitLab example:
+
+```yaml
+target_provider: gitlab
+gitlab_username: oauth2
+gitlab_token: YOUR_GITLAB_TOKEN
+```
+
+Gitea example:
+
+```yaml
+target_provider: gitea
+gitea_username: your-gitea-user
+gitea_token: YOUR_GITEA_TOKEN
+```
+
+Forgejo example:
+
+```yaml
+target_provider: forgejo
+forgejo_username: your-forgejo-user
+forgejo_token: YOUR_FORGEJO_TOKEN
+```
+
+You can override the target provider per repository:
+
+```yaml
+repos:
+  - name: HA-Addons-GitLab
+    source: https://github.com/tomtomdk/ha-addons.git
+    target: https://gitlab.example.com/tomtom/ha-addons.git
+    target_provider: gitlab
+
+  - name: HA-Addons-Forgejo
+    source: https://github.com/tomtomdk/ha-addons.git
+    target: https://forgejo.example.com/tomtom/ha-addons.git
+    target_provider: forgejo
+```
 
 
 ## Token permissions
@@ -79,10 +126,14 @@ write_repository
 
 The token user must also have access to the target project.
 
+### Gitea and Forgejo
+
+Create an access token for the user that can push to the target repository and set the matching provider username and token.
+
 ## Important
 
-This add-on does not create GitLab repositories automatically. Create the target GitLab repository first.
+This add-on does not create target repositories automatically. Create the target repository first.
 
-For the cleanest mirror, create the GitLab repository as an empty repository without README, license, or `.gitignore`.
+For the cleanest mirror, create the target repository as an empty repository without README, license, or `.gitignore`.
 
-See `DOCS.md` for troubleshooting common GitLab mirror errors.
+See `DOCS.md` for troubleshooting common mirror errors.

@@ -6,5 +6,5 @@ build_from:
   i386: ghcr.io/home-assistant/i386-base:3.21
 labels:
   org.opencontainers.image.title: "Git Repository Mirror"
-  org.opencontainers.image.description: "Mirror Git repositories from GitHub or other Git hosts to GitLab."
+  org.opencontainers.image.description: "Mirror Git repositories between GitHub, GitLab, Gitea, Forgejo, and other Git hosts."
   org.opencontainers.image.source: "https://github.com/tomtomdk/ha-addons"

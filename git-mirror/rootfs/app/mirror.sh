@@ -8,10 +8,21 @@ SYNC_INTERVAL="${SYNC_INTERVAL:-3600}"
 RUN_ON_START="${RUN_ON_START:-true}"
 MIRROR_MODE="${MIRROR_MODE:-heads-tags}"
 
+SOURCE_PROVIDER="${SOURCE_PROVIDER:-github}"
+SOURCE_USERNAME="${SOURCE_USERNAME:-}"
+SOURCE_TOKEN="${SOURCE_TOKEN:-}"
+TARGET_PROVIDER="${TARGET_PROVIDER:-gitlab}"
+TARGET_USERNAME="${TARGET_USERNAME:-}"
+TARGET_TOKEN="${TARGET_TOKEN:-}"
+
 GITHUB_USERNAME="${GITHUB_USERNAME:-}"
 GITHUB_TOKEN="${GITHUB_TOKEN:-}"
 GITLAB_USERNAME="${GITLAB_USERNAME:-oauth2}"
 GITLAB_TOKEN="${GITLAB_TOKEN:-}"
+GITEA_USERNAME="${GITEA_USERNAME:-}"
+GITEA_TOKEN="${GITEA_TOKEN:-}"
+FORGEJO_USERNAME="${FORGEJO_USERNAME:-}"
+FORGEJO_TOKEN="${FORGEJO_TOKEN:-}"
 
 NOTIFY_ON_SUCCESS="${NOTIFY_ON_SUCCESS:-false}"
 NOTIFY_ON_FAILURE="${NOTIFY_ON_FAILURE:-true}"
@@ -56,45 +67,181 @@ url_encode() {
   echo "$encoded"
 }
 
-inject_github_auth() {
-  local url="$1"
-
-  if [[ -z "$GITHUB_TOKEN" ]]; then
-    echo "$url"
-    return
-  fi
-
-  if [[ "$url" != https://github.com/* ]]; then
-    echo "$url"
-    return
-  fi
-
-  local username="${GITHUB_USERNAME:-x-access-token}"
-  local enc_user enc_token
-
-  enc_user="$(url_encode "$username")"
-  enc_token="$(url_encode "$GITHUB_TOKEN")"
-
-  echo "${url/https:\/\//https://${enc_user}:${enc_token}@}"
+is_http_url() {
+  [[ "$1" == https://* || "$1" == http://* ]]
 }
 
-inject_gitlab_auth() {
+is_github_url() {
+  [[ "$1" == https://github.com/* || "$1" == http://github.com/* ]]
+}
+
+normalize_provider() {
+  echo "${1:-custom}" | tr '[:upper:]' '[:lower:]'
+}
+
+provider_specific_token() {
+  local provider="$1"
+
+  case "$provider" in
+    github)
+      echo "$GITHUB_TOKEN"
+      ;;
+    gitlab)
+      echo "$GITLAB_TOKEN"
+      ;;
+    gitea)
+      echo "$GITEA_TOKEN"
+      ;;
+    forgejo)
+      echo "$FORGEJO_TOKEN"
+      ;;
+    *)
+      echo ""
+      ;;
+  esac
+}
+
+provider_specific_username() {
+  local provider="$1"
+
+  case "$provider" in
+    github)
+      echo "$GITHUB_USERNAME"
+      ;;
+    gitlab)
+      echo "$GITLAB_USERNAME"
+      ;;
+    gitea)
+      echo "$GITEA_USERNAME"
+      ;;
+    forgejo)
+      echo "$FORGEJO_USERNAME"
+      ;;
+    *)
+      echo ""
+      ;;
+  esac
+}
+
+provider_default_username() {
+  local provider="$1"
+
+  case "$provider" in
+    github)
+      echo "x-access-token"
+      ;;
+    gitlab)
+      echo "oauth2"
+      ;;
+    *)
+      echo ""
+      ;;
+  esac
+}
+
+generic_role_token() {
+  local role="$1"
+
+  if [[ "$role" == "source" ]]; then
+    echo "$SOURCE_TOKEN"
+  else
+    echo "$TARGET_TOKEN"
+  fi
+}
+
+generic_role_username() {
+  local role="$1"
+
+  if [[ "$role" == "source" ]]; then
+    echo "$SOURCE_USERNAME"
+  else
+    echo "$TARGET_USERNAME"
+  fi
+}
+
+resolve_token() {
+  local provider="$1"
+  local role="$2"
+  local explicit="${3:-}"
+  local token
+
+  if [[ -n "$explicit" && "$explicit" != "null" ]]; then
+    echo "$explicit"
+    return
+  fi
+
+  token="$(generic_role_token "$role")"
+  if [[ -n "$token" ]]; then
+    echo "$token"
+    return
+  fi
+
+  provider_specific_token "$provider"
+}
+
+resolve_username() {
+  local provider="$1"
+  local role="$2"
+  local explicit="${3:-}"
+  local username
+
+  if [[ -n "$explicit" && "$explicit" != "null" ]]; then
+    echo "$explicit"
+    return
+  fi
+
+  username="$(generic_role_username "$role")"
+  if [[ -n "$username" ]]; then
+    echo "$username"
+    return
+  fi
+
+  username="$(provider_specific_username "$provider")"
+  if [[ -n "$username" ]]; then
+    echo "$username"
+    return
+  fi
+
+  provider_default_username "$provider"
+}
+
+inject_provider_auth() {
   local url="$1"
+  local provider="$2"
+  local role="$3"
+  local username_override="${4:-}"
+  local token_override="${5:-}"
 
-  if [[ -z "$GITLAB_TOKEN" ]]; then
+  provider="$(normalize_provider "$provider")"
+
+  if ! is_http_url "$url"; then
     echo "$url"
     return
   fi
 
-  if [[ "$url" != https://* && "$url" != http://* ]]; then
+  if [[ "$provider" == "github" && -z "$token_override" && -z "$(generic_role_token "$role")" ]] && ! is_github_url "$url"; then
     echo "$url"
     return
   fi
 
-  local enc_user enc_token
+  local token username enc_user enc_token
+  token="$(resolve_token "$provider" "$role" "$token_override")"
 
-  enc_user="$(url_encode "$GITLAB_USERNAME")"
-  enc_token="$(url_encode "$GITLAB_TOKEN")"
+  if [[ -z "$token" ]]; then
+    echo "$url"
+    return
+  fi
+
+  username="$(resolve_username "$provider" "$role" "$username_override")"
+
+  if [[ -z "$username" ]]; then
+    log "WARNING: ${role} provider '${provider}' has a token but no username; using unauthenticated URL" >&2
+    echo "$url"
+    return
+  fi
+
+  enc_user="$(url_encode "$username")"
+  enc_token="$(url_encode "$token")"
 
   if [[ "$url" == https://* ]]; then
     echo "${url/https:\/\//https://${enc_user}:${enc_token}@}"
@@ -105,6 +252,20 @@ inject_gitlab_auth() {
 
 sanitize_name() {
   echo "$1" | tr -c 'a-zA-Z0-9._-' '_'
+}
+
+repo_field() {
+  local index="$1"
+  local field="$2"
+  local fallback="${3:-}"
+  local value
+
+  value="$(yq -r ".repos[$index].$field // \"\"" "$CONFIG_FILE")"
+  if [[ -z "$value" || "$value" == "null" ]]; then
+    echo "$fallback"
+  else
+    echo "$value"
+  fi
 }
 
 notify_home_assistant() {
@@ -268,11 +429,21 @@ push_full_mirror() {
 sync_repo() {
   local index="$1"
   local name source target enabled repo_dir source_auth target_auth
+  local source_provider source_username source_token
+  local target_provider target_username target_token
+  local repo_mirror_mode
 
-  name="$(yq -r ".repos[$index].name" "$CONFIG_FILE")"
-  source="$(yq -r ".repos[$index].source" "$CONFIG_FILE")"
-  target="$(yq -r ".repos[$index].target" "$CONFIG_FILE")"
-  enabled="$(yq -r ".repos[$index].enabled // true" "$CONFIG_FILE")"
+  name="$(repo_field "$index" "name")"
+  source="$(repo_field "$index" "source")"
+  target="$(repo_field "$index" "target")"
+  enabled="$(repo_field "$index" "enabled" "true")"
+  source_provider="$(repo_field "$index" "source_provider" "$SOURCE_PROVIDER")"
+  source_username="$(repo_field "$index" "source_username")"
+  source_token="$(repo_field "$index" "source_token")"
+  target_provider="$(repo_field "$index" "target_provider" "$TARGET_PROVIDER")"
+  target_username="$(repo_field "$index" "target_username")"
+  target_token="$(repo_field "$index" "target_token")"
+  repo_mirror_mode="$(repo_field "$index" "mirror_mode" "$MIRROR_MODE")"
 
   if [[ "$enabled" != "true" ]]; then
     log "Skipping disabled repo: $name"
@@ -295,10 +466,11 @@ sync_repo() {
   fi
 
   repo_dir="$DATA_DIR/$(sanitize_name "$name").git"
-  source_auth="$(inject_github_auth "$source")"
-  target_auth="$(inject_gitlab_auth "$target")"
+  source_auth="$(inject_provider_auth "$source" "$source_provider" "source" "$source_username" "$source_token")"
+  target_auth="$(inject_provider_auth "$target" "$target_provider" "target" "$target_username" "$target_token")"
 
   log "Syncing: $name"
+  log "Providers for $name: source=${source_provider}, target=${target_provider}, mode=${repo_mirror_mode}"
 
   ensure_repo_exists "$name" "$source_auth" "$repo_dir" || return 1
 
@@ -311,7 +483,7 @@ sync_repo() {
   log "Fetching updates for $name"
   git remote update --prune || return 1
 
-  case "$MIRROR_MODE" in
+  case "$repo_mirror_mode" in
     heads-tags)
       push_heads_tags "$name" || return 1
       ;;
@@ -322,7 +494,7 @@ sync_repo() {
       push_full_mirror "$name" || return 1
       ;;
     *)
-      log "ERROR: Invalid MIRROR_MODE: $MIRROR_MODE"
+      log "ERROR: Invalid mirror mode for $name: $repo_mirror_mode"
       log "Valid values: heads-tags, heads-tags-prune, mirror"
       return 1
       ;;
@@ -391,6 +563,8 @@ run_once() {
 log "Git mirror service started"
 log "Sync interval: ${SYNC_INTERVAL}s"
 log "Mirror mode: ${MIRROR_MODE}"
+log "Default source provider: ${SOURCE_PROVIDER}"
+log "Default target provider: ${TARGET_PROVIDER}"
 
 if bool_true "$RUN_ON_START"; then
   run_once || true

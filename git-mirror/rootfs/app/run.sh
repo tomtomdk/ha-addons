@@ -37,6 +37,24 @@ RUN_ON_START="$(read_option run_on_start true)"
 export MIRROR_MODE
 MIRROR_MODE="$(read_option mirror_mode heads-tags)"
 
+export SOURCE_PROVIDER
+SOURCE_PROVIDER="$(read_option source_provider github)"
+
+export SOURCE_USERNAME
+SOURCE_USERNAME="$(read_option source_username '')"
+
+export SOURCE_TOKEN
+SOURCE_TOKEN="$(read_option source_token '')"
+
+export TARGET_PROVIDER
+TARGET_PROVIDER="$(read_option target_provider gitlab)"
+
+export TARGET_USERNAME
+TARGET_USERNAME="$(read_option target_username '')"
+
+export TARGET_TOKEN
+TARGET_TOKEN="$(read_option target_token '')"
+
 export GITHUB_USERNAME
 GITHUB_USERNAME="$(read_option github_username '')"
 
@@ -48,6 +66,18 @@ GITLAB_USERNAME="$(read_option gitlab_username oauth2)"
 
 export GITLAB_TOKEN
 GITLAB_TOKEN="$(read_option gitlab_token '')"
+
+export GITEA_USERNAME
+GITEA_USERNAME="$(read_option gitea_username '')"
+
+export GITEA_TOKEN
+GITEA_TOKEN="$(read_option gitea_token '')"
+
+export FORGEJO_USERNAME
+FORGEJO_USERNAME="$(read_option forgejo_username '')"
+
+export FORGEJO_TOKEN
+FORGEJO_TOKEN="$(read_option forgejo_token '')"
 
 export NOTIFY_ON_SUCCESS
 NOTIFY_ON_SUCCESS="$(read_option notify_on_success false)"
@@ -87,6 +117,8 @@ DISCORD_WEBHOOK_URL="$(read_option discord_webhook_url '')"
 
 log "Starting Git Repository Mirror add-on"
 log "Mirror mode: $MIRROR_MODE"
+log "Default source provider: $SOURCE_PROVIDER"
+log "Default target provider: $TARGET_PROVIDER"
 log "Sync interval: ${SYNC_INTERVAL}s"
 log "Repo cache: $REPO_CACHE_DIR"
 
