@@ -60,11 +60,13 @@ repos:
     target: https://git.ttdk.eu/tomtom/ha-addons.git
     enabled: true
 ```
-> `enabled` is optional and defaults to `true`. Use the YAML editor if the form view gives validation issues with repo lists.
+> `enabled` is optional and defaults to `true`. Empty or incomplete repo rows are ignored until `name`, `source`, and `target` are filled in.
 
 ## Provider targets
 
 Set `target_provider` to `gitlab`, `gitea`, `forgejo`, `github`, or `custom`.
+
+For self-hosted Forgejo or Gitea, still choose `forgejo` or `gitea` as the provider. Use `custom` only when you want to provide generic `target_username` and `target_token` credentials.
 
 GitLab example:
 

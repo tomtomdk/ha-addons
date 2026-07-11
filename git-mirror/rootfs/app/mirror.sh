@@ -457,12 +457,12 @@ sync_repo() {
 
   if [[ -z "$source" || "$source" == "null" ]]; then
     log "Skipping $name: missing source"
-    return 1
+    return 0
   fi
 
   if [[ -z "$target" || "$target" == "null" ]]; then
     log "Skipping $name: missing target"
-    return 1
+    return 0
   fi
 
   repo_dir="$DATA_DIR/$(sanitize_name "$name").git"

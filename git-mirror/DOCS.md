@@ -48,7 +48,7 @@ repos:
     target: https://git.ttdk.eu/tomtom/ha-addons.git
     enabled: true
 ```
-> `enabled` is optional and defaults to `true`. Use the YAML editor if the form view gives validation issues with repo lists.
+> `enabled` is optional and defaults to `true`. Empty or incomplete repo rows are ignored until `name`, `source`, and `target` are filled in.
 
 ## Providers and credentials
 
@@ -61,6 +61,8 @@ Supported provider values:
 | `gitea` | Gitea source or target repositories. |
 | `forgejo` | Forgejo source or target repositories. |
 | `custom` | Any HTTP(S) Git server where you provide `source_username`/`source_token` or `target_username`/`target_token`. |
+
+For self-hosted Forgejo or Gitea, still choose `forgejo` or `gitea` as the provider. Use `custom` only when you want to provide generic `source_*` or `target_*` credentials.
 
 Credential precedence for each repository:
 
