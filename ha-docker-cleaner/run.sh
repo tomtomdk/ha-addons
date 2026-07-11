@@ -28,11 +28,19 @@ RUN_DAY="$(get_config "run_day" "sun")"
 RUN_HOUR="$(get_config "run_hour" "4")"
 RUN_ON_START="$(get_bool "run_on_start" false)"
 RUN_ON_START_DELAY="$(get_config "run_on_start_delay" "900")"
+DRY_RUN="$(get_bool "dry_run" false)"
+PRUNE_UNTIL="$(get_config "prune_until" "")"
 
 PRUNE_IMAGES="$(get_bool "prune_images" true)"
 PRUNE_CONTAINERS="$(get_bool "prune_containers" true)"
 PRUNE_BUILDER="$(get_bool "prune_builder" false)"
 PRUNE_VOLUMES="$(get_bool "prune_volumes" false)"
+PRUNE_NETWORKS="$(get_bool "prune_networks" false)"
+LOG_MAX_LINES="$(get_config "log_max_lines" "500")"
+
+if ! [[ "$LOG_MAX_LINES" =~ ^[0-9]+$ ]] || [ "$LOG_MAX_LINES" -lt 100 ]; then
+  LOG_MAX_LINES="500"
+fi
 
 NOTIFY_ENABLED="$(get_bool "notify_enabled" true)"
 NOTIFY_ON_SUCCESS="$(get_bool "notify_on_success" true)"
@@ -61,8 +69,13 @@ log() {
 
 trim_log() {
   if [ -f "$LOG_FILE" ]; then
-    tail -500 "$LOG_FILE" > "${LOG_FILE}.tmp" && mv "${LOG_FILE}.tmp" "$LOG_FILE"
+    tail -"${LOG_MAX_LINES}" "$LOG_FILE" > "${LOG_FILE}.tmp" && mv "${LOG_FILE}.tmp" "$LOG_FILE"
   fi
+}
+
+format_command() {
+  printf '%q ' "$@"
+  echo
 }
 
 # -----------------------------
@@ -281,6 +294,12 @@ run_docker_command() {
   shift
 
   log "$label"
+  log "Command: $(format_command "$@")"
+
+  if [ "$DRY_RUN" = "true" ]; then
+    log "Dry run enabled; command not executed"
+    return 0
+  fi
 
   if ! "$@" 2>&1 | tee -a "$LOG_FILE"; then
     log "ERROR: Command failed: $*"
@@ -307,6 +326,10 @@ run_cleanup() {
   log "  prune_containers=${PRUNE_CONTAINERS}"
   log "  prune_builder=${PRUNE_BUILDER}"
   log "  prune_volumes=${PRUNE_VOLUMES}"
+  log "  prune_networks=${PRUNE_NETWORKS}"
+  log "  prune_until=${PRUNE_UNTIL:-disabled}"
+  log "  dry_run=${DRY_RUN}"
+  log "  log_max_lines=${LOG_MAX_LINES}"
   log "  notify_enabled=${NOTIFY_ENABLED}"
   log "  notify_mode=${NOTIFY_MODE}"
 
@@ -329,25 +352,40 @@ Check the add-on log and make sure docker_api is enabled."
   log "Before Docker usage:"
   docker system df 2>&1 | tee -a "$LOG_FILE" || true
 
+  local filter_args=()
+  if [ -n "$PRUNE_UNTIL" ]; then
+    filter_args=(--filter "until=${PRUNE_UNTIL}")
+  fi
+
   if [ "$PRUNE_BUILDER" = "true" ]; then
-    run_docker_command "Pruning Docker builder cache" docker builder prune -af || errors=$((errors + 1))
+    run_docker_command "Pruning Docker builder cache" docker builder prune -af "${filter_args[@]}" || errors=$((errors + 1))
   else
     log "Skipping Docker builder cache prune"
   fi
 
   if [ "$PRUNE_IMAGES" = "true" ]; then
-    run_docker_command "Pruning unused Docker images" docker image prune -af || errors=$((errors + 1))
+    run_docker_command "Pruning unused Docker images" docker image prune -af "${filter_args[@]}" || errors=$((errors + 1))
   else
     log "Skipping Docker image prune"
   fi
 
   if [ "$PRUNE_CONTAINERS" = "true" ]; then
-    run_docker_command "Pruning stopped containers" docker container prune -f || errors=$((errors + 1))
+    run_docker_command "Pruning stopped containers" docker container prune -f "${filter_args[@]}" || errors=$((errors + 1))
   else
     log "Skipping Docker container prune"
   fi
 
+  if [ "$PRUNE_NETWORKS" = "true" ]; then
+    run_docker_command "Pruning unused Docker networks" docker network prune -f "${filter_args[@]}" || errors=$((errors + 1))
+  else
+    log "Skipping Docker network prune"
+  fi
+
   if [ "$PRUNE_VOLUMES" = "true" ]; then
+    if [ -n "$PRUNE_UNTIL" ]; then
+      log "Volume prune does not support the until filter; pruning all unused volumes"
+    fi
+
     run_docker_command "Pruning unused Docker volumes" docker volume prune -f || errors=$((errors + 1))
   else
     log "Skipping Docker volume prune"
@@ -377,9 +415,17 @@ Log: /share/ha-docker-cleaner.log"
 
     log "HA Docker Cleaner finished with ${errors} error(s)"
   else
+    local title="HA Docker Cleaner finished"
+    local result_text="Docker cleanup completed successfully."
+
+    if [ "$DRY_RUN" = "true" ]; then
+      title="HA Docker Cleaner dry run finished"
+      result_text="Dry run completed successfully. No Docker resources were removed."
+    fi
+
     notify "success" \
-      "HA Docker Cleaner finished" \
-      "Docker cleanup completed successfully.
+      "$title" \
+      "${result_text}
 
 Disk usage: ${used_percent}
 Free space: ${free_space}
@@ -401,6 +447,9 @@ log "Configured schedule: ${RUN_DAY} at ${RUN_HOUR}:00"
 log "Run on start: ${RUN_ON_START:-false}"
 log "Run on start delay: ${RUN_ON_START_DELAY:-900} seconds"
 log "Volume pruning enabled: ${PRUNE_VOLUMES}"
+log "Network pruning enabled: ${PRUNE_NETWORKS}"
+log "Dry run: ${DRY_RUN}"
+log "Prune age filter: ${PRUNE_UNTIL:-disabled}"
 
 if [ "${RUN_ON_START:-false}" = "true" ]; then
   if [ "${RUN_ON_START_DELAY:-900}" -gt 0 ]; then

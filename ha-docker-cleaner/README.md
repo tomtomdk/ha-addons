@@ -12,6 +12,9 @@ This add-on is useful for systems where old add-on images, stopped containers, o
 - Removes stopped containers
 - Optional Docker builder cache cleanup
 - Optional unused volume cleanup
+- Optional unused network cleanup
+- Dry-run mode for testing cleanup settings
+- Optional age filter to keep recently-created Docker resources
 - Configurable weekly schedule
 - Runs as a Home Assistant add-on
 - Writes cleanup logs to `/share/ha-docker-cleaner.log`
@@ -31,6 +34,7 @@ On devices with limited storage, this can eventually cause the system disk to fi
 docker image prune -af
 docker container prune -f
 docker builder prune -af
+docker network prune -f
 ```
 
 ---
@@ -45,6 +49,7 @@ By default, the add-on cleans:
 | Stopped containers | Enabled | Removes containers that are no longer running |
 | Builder cache | Disabled | Removes Docker build cache |
 | Unused volumes | Disabled | Removes dangling Docker volumes |
+| Unused networks | Disabled | Removes Docker networks not used by containers |
 
 ---
 
@@ -65,11 +70,28 @@ prune_volumes: false
 Recommended default:
 
 ```yaml
+dry_run: false
+prune_until: ""
 prune_images: true
 prune_containers: true
 prune_builder: false
 prune_volumes: false
+prune_networks: false
 ```
+
+To test a configuration without deleting anything:
+
+```yaml
+dry_run: true
+```
+
+To keep recently-created resources, set an age filter:
+
+```yaml
+prune_until: 168h
+```
+
+The age filter is applied to image, container, builder-cache, and network pruning. Docker volume pruning does not support this filter.
 
 ---
 
@@ -102,10 +124,14 @@ Example configuration:
 ```yaml
 run_day: sun
 run_hour: 4
+dry_run: false
+prune_until: ""
 prune_images: true
 prune_containers: true
 prune_builder: false
 prune_volumes: false
+prune_networks: false
+log_max_lines: 500
 ```
 
 ### Options
@@ -114,10 +140,16 @@ prune_volumes: false
 |---|---|---:|---|
 | `run_day` | list | `sun` | Day of the week to run cleanup |
 | `run_hour` | integer | `4` | Hour of the day to run cleanup, using 24-hour format |
+| `run_on_start` | boolean | `false` | Run cleanup when the add-on starts |
+| `run_on_start_delay` | integer | `900` | Seconds to wait before startup cleanup |
+| `dry_run` | boolean | `false` | Log cleanup commands without deleting anything |
+| `prune_until` | string | empty | Optional Docker `until` filter, for example `24h` or `168h` |
 | `prune_images` | boolean | `true` | Remove unused Docker images |
 | `prune_containers` | boolean | `true` | Remove stopped containers |
 | `prune_builder` | boolean | `false` | Remove Docker build cache |
 | `prune_volumes` | boolean | `false` | Remove unused Docker volumes |
+| `prune_networks` | boolean | `false` | Remove unused Docker networks |
+| `log_max_lines` | integer | `500` | Number of recent log lines to keep |
 
 Supported values for `run_day`:
 
@@ -168,6 +200,7 @@ The log includes:
 - Disk usage before cleanup
 - Docker usage before cleanup
 - Cleanup actions performed
+- Exact Docker commands used
 - Disk usage after cleanup
 - Docker usage after cleanup
 
@@ -201,6 +234,7 @@ The add-on automates these commands depending on your configuration:
 docker image prune -af
 docker container prune -f
 docker builder prune -af
+docker network prune -f
 docker volume prune -f
 ```
 
@@ -320,10 +354,13 @@ For most users:
 ```yaml
 run_day: sun
 run_hour: 4
+dry_run: false
+prune_until: ""
 prune_images: true
 prune_containers: true
 prune_builder: false
 prune_volumes: false
+prune_networks: false
 ```
 
 For more aggressive cleanup:
@@ -335,6 +372,8 @@ prune_images: true
 prune_containers: true
 prune_builder: true
 prune_volumes: false
+prune_networks: true
+prune_until: 168h
 ```
 
 Only enable this if you understand what Docker volumes are:

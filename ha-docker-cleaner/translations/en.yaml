@@ -15,6 +15,14 @@ configuration:
     name: Run on Start Delay
     description: Wait this many seconds before running cleanup after the add-on starts. This helps avoid interfering with Home Assistant or other add-ons during boot.
 
+  dry_run:
+    name: Dry Run
+    description: Log the Docker cleanup commands that would run without deleting anything.
+
+  prune_until:
+    name: Prune Age Filter
+    description: Optional Docker until filter, such as 24h or 168h. When set, images, containers, builder cache, and networks newer than this are kept.
+
   prune_images:
     name: Prune Unused Images
     description: Remove Docker images that are no longer used by running containers.
@@ -30,6 +38,14 @@ configuration:
   prune_volumes:
     name: Prune Unused Volumes
     description: Remove unused Docker volumes. Use with care, as old data may be removed.
+
+  prune_networks:
+    name: Prune Unused Networks
+    description: Remove Docker networks that are not used by any containers.
+
+  log_max_lines:
+    name: Log Max Lines
+    description: Keep this many recent lines in /share/ha-docker-cleaner.log.
 
   notify_enabled:
     name: Enable Notifications

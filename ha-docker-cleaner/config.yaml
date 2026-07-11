@@ -1,5 +1,5 @@
 name: "HA Docker Cleaner"
-version: "1.1.7"
+version: "1.2.0"
 slug: "ha_docker_cleaner"
 description: "Automatically prunes unused Docker resources and can send cleanup notifications."
 url: "https://github.com/tomtomdk/ha-addons/tree/main/ha-docker-cleaner"
@@ -23,10 +23,14 @@ options:
   run_hour: 4
   run_on_start: false
   run_on_start_delay: 900
+  dry_run: false
+  prune_until: ""
   prune_images: true
   prune_containers: true
   prune_builder: false
   prune_volumes: false
+  prune_networks: false
+  log_max_lines: 500
   notify_enabled: true
   notify_on_success: true
   notify_on_failure: true
@@ -45,10 +49,14 @@ schema:
   run_hour: "int(0,23)"
   run_on_start: "bool"
   run_on_start_delay: "int(0,86400)"
+  dry_run: "bool"
+  prune_until: "str?"
   prune_images: "bool"
   prune_containers: "bool"
   prune_builder: "bool"
   prune_volumes: "bool"
+  prune_networks: "bool"
+  log_max_lines: "int(100,10000)"
   notify_enabled: "bool"
   notify_on_success: "bool"
   notify_on_failure: "bool"
